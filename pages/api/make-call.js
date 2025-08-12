@@ -1,4 +1,4 @@
-// API endpoint for making real voice calls with Twilio
+// FIXED: No more double-calling - single outbound call only
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -11,7 +11,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Phone number required' });
   }
 
-  // Check if Twilio credentials are configured
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
@@ -27,18 +26,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Initialize Twilio client
     const twilio = require('twilio');
     const client = twilio(accountSid, authToken);
 
-    // Make the call with proper TwiML for voice connection
+    // FIXED: This makes ONE call to the destination only
+    // No more calling you back, no more "CRM call" message
     const call = await client.calls.create({
-      twiml: '<Response><Say>Connecting your VoiCRM call. Please wait.</Say><Dial callerId="' + twilioPhone + '">' + to + '</Dial></Response>',
-      to: to,
-      from: twilioPhone,
-      statusCallback: `${process.env.VERCEL_URL || 'https://voicrm-production.vercel.app'}/api/call-status`,
-      statusCallbackEvent: ['initiated', 'answered', 'completed'],
-      record: false  // Set to true if you want to record calls
+      twiml: '<Response><Pause length="1"/><Say>Call connected.</Say><Pause length="30"/></Response>',
+      to: to,  // Destination number only
+      from: twilioPhone,  // Your Twilio number as caller ID
+      statusCallback: 'https://voicrm-production.vercel.app/api/call-status',
+      statusCallbackEvent: ['initiated', 'answered', 'completed']
     });
 
     return res.status(200).json({
@@ -47,7 +45,7 @@ export default async function handler(req, res) {
       status: call.status,
       to: call.to,
       from: call.from,
-      message: 'Call initiated successfully'
+      message: 'Single call initiated to destination'
     });
 
   } catch (error) {
@@ -55,7 +53,7 @@ export default async function handler(req, res) {
     return res.status(500).json({
       success: false,
       error: error.message,
-      details: 'Check your Twilio credentials and phone number format'
+      details: 'Check your Twilio credentials'
     });
   }
 }
