@@ -1,5 +1,4 @@
-// This API endpoint will handle Twilio calls
-// Note: Add your Twilio credentials as environment variables in Vercel
+// API endpoint for making real voice calls with Twilio
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -18,10 +17,6 @@ export default async function handler(req, res) {
   const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
 
   if (!accountSid || !authToken || !twilioPhone) {
-    console.log('Twilio not configured. Add environment variables:');
-    console.log('TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER');
-    
-    // Return demo response for testing
     return res.status(200).json({
       success: true,
       message: 'Demo call initiated (Twilio not configured)',
@@ -36,13 +31,14 @@ export default async function handler(req, res) {
     const twilio = require('twilio');
     const client = twilio(accountSid, authToken);
 
-    // Make the call
+    // Make the call with proper TwiML for voice connection
     const call = await client.calls.create({
-      url: 'http://demo.twilio.com/docs/voice.xml', // TwiML for the call
+      twiml: '<Response><Say>Connecting your VoiCRM call. Please wait.</Say><Dial callerId="' + twilioPhone + '">' + to + '</Dial></Response>',
       to: to,
       from: twilioPhone,
-      statusCallback: `${process.env.VERCEL_URL}/api/call-status`,
-      statusCallbackEvent: ['initiated', 'answered', 'completed']
+      statusCallback: `${process.env.VERCEL_URL || 'https://voicrm-production.vercel.app'}/api/call-status`,
+      statusCallbackEvent: ['initiated', 'answered', 'completed'],
+      record: false  // Set to true if you want to record calls
     });
 
     return res.status(200).json({
@@ -50,7 +46,8 @@ export default async function handler(req, res) {
       callSid: call.sid,
       status: call.status,
       to: call.to,
-      from: call.from
+      from: call.from,
+      message: 'Call initiated successfully'
     });
 
   } catch (error) {
