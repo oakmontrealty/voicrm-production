@@ -1,7 +1,13 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "cleanUrls": true
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "installCommand": null,
+  "devCommand": null,
+  "framework": null,
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/index.html"
+    }
+  ]
 }
