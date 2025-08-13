@@ -7,6 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Forum:wght@400&family=Avenir:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%23636B56'/><path d='M16 8l4 8h-8z' fill='%23B28354'/></svg>">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/call-interface.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    
+    <!-- Twilio Voice SDK -->
+    <script src="https://sdk.twilio.com/js/voice/releases/2.11.1/twilio.min.js"></script>
 </head>
 <body>
     <!-- Loading Screen -->
@@ -77,6 +84,22 @@
             <a href="#" class="nav-item" data-section="reports">
                 <span class="nav-icon">📋</span>
                 <span>Reports</span>
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">AI Features</div>
+            <a href="#" class="nav-item" data-section="transcription">
+                <span class="nav-icon">🎤</span>
+                <span>Call Transcription</span>
+            </a>
+            <a href="#" class="nav-item" data-section="ai-insights">
+                <span class="nav-icon">🧠</span>
+                <span>AI Insights</span>
+            </a>
+            <a href="#" class="nav-item" data-section="lead-scoring">
+                <span class="nav-icon">🎯</span>
+                <span>Lead Scoring</span>
             </a>
         </div>
         
@@ -208,13 +231,14 @@
                             <div class="contact-header">
                                 <span class="contact-name">Sarah Mitchell</span>
                                 <span class="contact-status status-hot">Hot</span>
+                                <span class="lead-score">95</span>
                             </div>
                             <div class="contact-details">
-                                📞 04-8765-4321 • 📧 sarah@email.com<br>
-                                🏡 Looking for 3BR house in Campbelltown
+                                📞 +61-487-654-321 • 📧 sarah@email.com<br>
+                                🏡 Looking for 3BR house in Parramatta • Budget $800k-1.2M
                             </div>
                             <div class="contact-actions">
-                                <button class="contact-action-btn" onclick="makeCallToContact('04-8765-4321', 'Sarah Mitchell')">Call</button>
+                                <button class="contact-action-btn" onclick="makeCallToContact('+61487654321', 'Sarah Mitchell')">Call</button>
                                 <button class="contact-action-btn">SMS</button>
                                 <button class="contact-action-btn">Email</button>
                             </div>
@@ -224,13 +248,14 @@
                             <div class="contact-header">
                                 <span class="contact-name">Michael Chen</span>
                                 <span class="contact-status status-warm">Warm</span>
+                                <span class="lead-score">78</span>
                             </div>
                             <div class="contact-details">
-                                📞 04-5432-1098 • 📧 michael@business.com<br>
-                                🏢 Investment property in Liverpool
+                                📞 +61-454-321-098 • 📧 michael@business.com<br>
+                                🏢 Commercial property investor - Liverpool industrial
                             </div>
                             <div class="contact-actions">
-                                <button class="contact-action-btn" onclick="makeCallToContact('04-5432-1098', 'Michael Chen')">Call</button>
+                                <button class="contact-action-btn" onclick="makeCallToContact('+61454321098', 'Michael Chen')">Call</button>
                                 <button class="contact-action-btn">SMS</button>
                                 <button class="contact-action-btn">Email</button>
                             </div>
@@ -240,13 +265,14 @@
                             <div class="contact-header">
                                 <span class="contact-name">Emma Thompson</span>
                                 <span class="contact-status status-lead">Lead</span>
+                                <span class="lead-score">62</span>
                             </div>
                             <div class="contact-details">
-                                📞 04-9876-5432 • 📧 emma@startup.io<br>
+                                📞 +61-498-765-432 • 📧 emma@startup.io<br>
                                 🏠 First home buyer, pre-approved $650k
                             </div>
                             <div class="contact-actions">
-                                <button class="contact-action-btn" onclick="makeCallToContact('04-9876-5432', 'Emma Thompson')">Call</button>
+                                <button class="contact-action-btn" onclick="makeCallToContact('+61498765432', 'Emma Thompson')">Call</button>
                                 <button class="contact-action-btn">SMS</button>
                                 <button class="contact-action-btn">Email</button>
                             </div>
@@ -265,13 +291,13 @@
                     
                     <div class="metrics-grid">
                         <div class="metric-card">
-                            <div class="metric-value" id="calls-today">12</div>
+                            <div class="metric-value" id="calls-today">0</div>
                             <div class="metric-label">Calls Made</div>
                             <div class="metric-change positive">+15% vs yesterday</div>
                         </div>
                         
                         <div class="metric-card">
-                            <div class="metric-value" id="leads-generated">6</div>
+                            <div class="metric-value" id="leads-generated">0</div>
                             <div class="metric-label">New Leads</div>
                             <div class="metric-change positive">+25% vs yesterday</div>
                         </div>
@@ -296,7 +322,7 @@
                 <div class="card-header">
                     <h3 class="card-title">
                         <span class="card-icon">📡</span>
-                        Call Quality Monitor
+                        Real-Time Call Quality Monitor
                     </h3>
                 </div>
                 
@@ -356,14 +382,50 @@
                         </div>
                         <div class="activity-time">1 hour ago</div>
                     </div>
-                    
-                    <div class="activity-item">
-                        <div class="activity-icon activity-call">📞</div>
-                        <div class="activity-content">
-                            <div class="activity-title">Outbound call</div>
-                            <div class="activity-description">Follow-up call with Thompson family</div>
+                </div>
+            </section>
+
+            <!-- AI Insights Panel -->
+            <section class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">🧠</span>
+                        AI-Powered Insights
+                    </h3>
+                </div>
+                
+                <div class="ai-insights">
+                    <div class="insight-item">
+                        <div class="insight-icon">🎯</div>
+                        <div class="insight-content">
+                            <div class="insight-title">Lead Score Alert</div>
+                            <div class="insight-description">Sarah Mitchell's engagement score increased to 95 - consider priority follow-up</div>
                         </div>
-                        <div class="activity-time">2 hours ago</div>
+                        <div class="insight-action">
+                            <button class="insight-btn">Act Now</button>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-item">
+                        <div class="insight-icon">📈</div>
+                        <div class="insight-content">
+                            <div class="insight-title">Call Pattern Analysis</div>
+                            <div class="insight-description">Best call times: 10-11 AM and 2-3 PM show 40% higher connection rates</div>
+                        </div>
+                        <div class="insight-action">
+                            <button class="insight-btn">View Report</button>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-item">
+                        <div class="insight-icon">🏡</div>
+                        <div class="insight-content">
+                            <div class="insight-title">Property Match</div>
+                            <div class="insight-description">3 new properties match Emma Thompson's criteria - auto-notification sent</div>
+                        </div>
+                        <div class="insight-action">
+                            <button class="insight-btn">Review</button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -373,6 +435,8 @@
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
 
+    <!-- JavaScript -->
+    <script src="js/twilio-integration.js"></script>
     <script src="js/voicrm-app.js"></script>
 </body>
 </html>
