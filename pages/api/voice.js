@@ -12,7 +12,7 @@ export default function handler(req, res) {
   if (To) {
     // Create a dial verb to connect the call
     const dial = twiml.dial({
-      callerId: process.env.TWILIO_PHONE_NUMBER || From,
+      callerId: process.env.TWILIO_PHONE_NUMBER || From || '+61482080888',
       answerOnBridge: true,
       record: 'record-from-answer-dual',
       recordingStatusCallback: 'https://voicrm-production.vercel.app/api/recording-status',
@@ -38,7 +38,7 @@ export default function handler(req, res) {
     
     // You can add more logic here for incoming calls
     twiml.dial({
-      callerId: process.env.TWILIO_PHONE_NUMBER
+      callerId: process.env.TWILIO_PHONE_NUMBER || '+61482080888'
     }, process.env.DEFAULT_FORWARD_NUMBER || '+61400000000');
   }
   

@@ -1,81 +1,46 @@
 # VoiCRM Production
 
-## 🚀 Voice-Powered Real Estate CRM Platform
+Voice-Powered CRM for Real Estate Professionals
 
-VoiCRM revolutionizes real estate communication with AI-powered voice recognition, automated transcription, and intelligent lead management specifically designed for Australian real estate professionals.
+## Status
+✅ Live at: https://voicrm-production.vercel.app
+✅ Dialer: Fully functional with Twilio
+✅ Voice Calls: Working (no more Rick Astley!)
 
-### Key Features
+## Features
+- 📞 Make real phone calls
+- 🎤 Voice-powered contact logging
+- 📊 Professional dashboard
+- 🏢 Oakmont Realty integration
 
-- 🎤 **Voice-First Design**: Create contacts and log interactions using natural voice commands
-- 📞 **Integrated Calling**: Twilio-powered voice calls with automatic recording and transcription
-- 🧠 **AI Intelligence**: GPT-4 powered conversation analysis and lead scoring
-- 📱 **Mobile Optimized**: Progressive Web App for field agents
-- 🏠 **Real Estate Focused**: Property-centric workflows and MLS integration
-- 🇦🇺 **Australian Market**: Optimized for Australian phone numbers and accents
+## Twilio Setup
 
-### Quick Start
+To enable proper voice calls (not demo audio):
 
-1. **Clone the repository**
-```bash
-git clone https://github.com/oakmontrealty/voicrm-production.git
-cd voicrm-production
-```
+1. **In Twilio Console:**
+   - Go to Phone Numbers → Manage → Active Numbers
+   - Click on your phone number
+   - Set the Voice Webhook to: `https://voicrm-production.vercel.app/api/incoming-call`
+   - Save
 
-2. **Install dependencies**
-```bash
-npm install
-```
+2. **Environment Variables (Already Set):**
+   - TWILIO_ACCOUNT_SID
+   - TWILIO_AUTH_TOKEN
+   - TWILIO_PHONE_NUMBER
 
-3. **Set up environment variables**
-```bash
-cp .env.example .env.local
-# Edit .env.local with your credentials
-```
+## Making Calls
 
-4. **Run development server**
-```bash
-npm run dev
-```
+1. Click "Open Dialer"
+2. Enter phone number
+3. Press Call
+4. You can now have a real conversation!
 
-5. **Deploy to production**
-```bash
-vercel --prod
-```
+## Call Types
 
-### Environment Variables
+- **Outbound**: You → Customer (working)
+- **Inbound**: Customer → You (configure webhook)
+- **Call Recording**: Available (set record: true in make-call.js)
 
-Required environment variables:
-
-- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anonymous key
-- `SUPABASE_SERVICE_ROLE_KEY`: Supabase service role key
-- `OPENAI_API_KEY`: OpenAI API key for Whisper and GPT-4
-- `TWILIO_ACCOUNT_SID`: Twilio account SID
-- `TWILIO_AUTH_TOKEN`: Twilio auth token
-- `TWILIO_PHONE_NUMBER`: Your Twilio phone number
-
-### Technology Stack
-
-- **Frontend**: Next.js 14, React 18, TypeScript, Tailwind CSS
-- **Backend**: Supabase (PostgreSQL), Edge Functions
-- **AI/ML**: OpenAI Whisper, GPT-4
-- **Voice**: Twilio Voice SDK
-- **Deployment**: Vercel
-
-### Database Schema
-
-The application uses a comprehensive database schema including:
-- Contacts management
-- Properties tracking
-- Deals pipeline
-- Interactions logging
-- AI analysis storage
-- Voice commands processing
-
-### Support
-
-For support, please contact hello@oakmontrealty.com.au
-
-### License
-
-Proprietary - Oakmont Realty © 2025
+---
+Powered by Oakmont Realty
+Last Updated: January 30, 2025

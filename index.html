@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiCRM Professional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Forum:wght@400&family=Avenir:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%23636B56'/><path d='M16 8l4 8h-8z' fill='%23B28354'/></svg>">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/call-interface.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    
+    <!-- Twilio Voice SDK -->
+    <script src="https://sdk.twilio.com/js/voice/releases/2.11.1/twilio.min.js"></script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">VoiCRM</div>
+            <div class="loading-spinner"></div>
+            <p style="margin-top: 20px; opacity: 0.8;">Initializing Professional Communication Platform...</p>
+        </div>
+    </div>
+
+    <!-- Navigation Sidebar -->
+    <nav id="sidebar" class="sidebar">
+        <div class="logo-section">
+            <div class="logo">VoiCRM</div>
+            <div class="logo-subtitle">Professional Platform</div>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">Main</div>
+            <a href="#" class="nav-item active" data-section="dashboard">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-section="contacts">
+                <span class="nav-icon">👥</span>
+                <span>Contacts</span>
+                <span class="nav-badge">247</span>
+            </a>
+            <a href="#" class="nav-item" data-section="calls">
+                <span class="nav-icon">📞</span>
+                <span>Call History</span>
+            </a>
+            <a href="#" class="nav-item" data-section="properties">
+                <span class="nav-icon">🏡</span>
+                <span>Properties</span>
+                <span class="nav-badge">12</span>
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">Sales</div>
+            <a href="#" class="nav-item" data-section="pipeline">
+                <span class="nav-icon">⚡</span>
+                <span>Sales Pipeline</span>
+            </a>
+            <a href="#" class="nav-item" data-section="leads">
+                <span class="nav-icon">🎯</span>
+                <span>Lead Management</span>
+                <span class="nav-badge">8</span>
+            </a>
+            <a href="#" class="nav-item" data-section="analytics">
+                <span class="nav-icon">📈</span>
+                <span>Analytics</span>
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">Tools</div>
+            <a href="#" class="nav-item" data-section="dialer">
+                <span class="nav-icon">☎️</span>
+                <span>Smart Dialer</span>
+            </a>
+            <a href="#" class="nav-item" data-section="campaigns">
+                <span class="nav-icon">📧</span>
+                <span>Campaigns</span>
+            </a>
+            <a href="#" class="nav-item" data-section="reports">
+                <span class="nav-icon">📋</span>
+                <span>Reports</span>
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">AI Features</div>
+            <a href="#" class="nav-item" data-section="transcription">
+                <span class="nav-icon">🎤</span>
+                <span>Call Transcription</span>
+            </a>
+            <a href="#" class="nav-item" data-section="ai-insights">
+                <span class="nav-icon">🧠</span>
+                <span>AI Insights</span>
+            </a>
+            <a href="#" class="nav-item" data-section="lead-scoring">
+                <span class="nav-icon">🎯</span>
+                <span>Lead Scoring</span>
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-title">Settings</div>
+            <a href="#" class="nav-item" data-section="integrations">
+                <span class="nav-icon">🔗</span>
+                <span>Integrations</span>
+            </a>
+            <a href="#" class="nav-item" data-section="settings">
+                <span class="nav-icon">⚙️</span>
+                <span>Settings</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content" class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button id="sidebar-toggle" class="sidebar-toggle">☰</button>
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Welcome back, Agent Professional</p>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="global-search">
+                    <input type="text" id="global-search" class="search-input" placeholder="Search contacts, properties, calls...">
+                    <span class="search-icon">🔍</span>
+                </div>
+                
+                <button id="global-voice-btn" class="global-voice-btn" title="Voice Command (Space)">
+                    🎤
+                </button>
+                
+                <div class="user-menu">
+                    <div class="user-avatar">AP</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-container">
+            <!-- Voice Command Center -->
+            <section class="voice-command-center">
+                <div class="voice-header">
+                    <h2 class="voice-title">AI Voice Command Center</h2>
+                    <p class="voice-description">Use natural language to manage contacts, make calls, and update your CRM</p>
+                </div>
+                
+                <div class="voice-controls">
+                    <button id="voice-command-btn" class="voice-command-btn">
+                        <div class="voice-animation">
+                            <div class="voice-wave"></div>
+                            <div class="voice-wave"></div>
+                            <div class="voice-wave"></div>
+                        </div>
+                        <span class="voice-text">Tap to speak</span>
+                    </button>
+                </div>
+                
+                <div id="voice-transcript" class="voice-transcript">
+                    <div class="transcript-placeholder">
+                        <span class="placeholder-icon">🎤</span>
+                        <span class="placeholder-text">Voice commands and transcripts appear here...</span>
+                    </div>
+                </div>
+                
+                <div class="status-indicator status-ready" id="call-status-indicator">
+                    <div class="status-dot"></div>
+                    <span class="status-text">Ready</span>
+                </div>
+            </section>
+
+            <!-- Main Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- VoIP Phone Interface -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span class="card-icon">📞</span>
+                            Smart Dialer
+                        </h3>
+                    </div>
+                    
+                    <div class="phone-interface">
+                        <div id="phone-display" class="phone-display">Enter number...</div>
+                        
+                        <div class="dialer-grid">
+                            <button class="dialer-btn" onclick="addDigit('1')">1</button>
+                            <button class="dialer-btn" onclick="addDigit('2')">2<span class="dialer-letters">ABC</span></button>
+                            <button class="dialer-btn" onclick="addDigit('3')">3<span class="dialer-letters">DEF</span></button>
+                            <button class="dialer-btn" onclick="addDigit('4')">4<span class="dialer-letters">GHI</span></button>
+                            <button class="dialer-btn" onclick="addDigit('5')">5<span class="dialer-letters">JKL</span></button>
+                            <button class="dialer-btn" onclick="addDigit('6')">6<span class="dialer-letters">MNO</span></button>
+                            <button class="dialer-btn" onclick="addDigit('7')">7<span class="dialer-letters">PQRS</span></button>
+                            <button class="dialer-btn" onclick="addDigit('8')">8<span class="dialer-letters">TUV</span></button>
+                            <button class="dialer-btn" onclick="addDigit('9')">9<span class="dialer-letters">WXYZ</span></button>
+                            <button class="dialer-btn" onclick="addDigit('*')">*</button>
+                            <button class="dialer-btn" onclick="addDigit('0')">0<span class="dialer-letters">+</span></button>
+                            <button class="dialer-btn" onclick="addDigit('#')">#</button>
+                        </div>
+                        
+                        <div class="call-controls">
+                            <button class="call-btn" onclick="makeCall()">
+                                📞 Call
+                            </button>
+                            <button class="call-btn" onclick="clearDisplay()" style="background: linear-gradient(135deg, var(--grey-primary), var(--grey-secondary));">
+                                ⌫ Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Priority Contacts -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span class="card-icon">⭐</span>
+                            Priority Contacts
+                        </h3>
+                    </div>
+                    
+                    <div class="contact-list" id="priority-contacts-list">
+                        <div class="contact-item">
+                            <div class="contact-header">
+                                <span class="contact-name">Sarah Mitchell</span>
+                                <span class="contact-status status-hot">Hot</span>
+                                <span class="lead-score">95</span>
+                            </div>
+                            <div class="contact-details">
+                                📞 +61-487-654-321 • 📧 sarah@email.com<br>
+                                🏡 Looking for 3BR house in Parramatta • Budget $800k-1.2M
+                            </div>
+                            <div class="contact-actions">
+                                <button class="contact-action-btn" onclick="makeCallToContact('+61487654321', 'Sarah Mitchell')">Call</button>
+                                <button class="contact-action-btn">SMS</button>
+                                <button class="contact-action-btn">Email</button>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-header">
+                                <span class="contact-name">Michael Chen</span>
+                                <span class="contact-status status-warm">Warm</span>
+                                <span class="lead-score">78</span>
+                            </div>
+                            <div class="contact-details">
+                                📞 +61-454-321-098 • 📧 michael@business.com<br>
+                                🏢 Commercial property investor - Liverpool industrial
+                            </div>
+                            <div class="contact-actions">
+                                <button class="contact-action-btn" onclick="makeCallToContact('+61454321098', 'Michael Chen')">Call</button>
+                                <button class="contact-action-btn">SMS</button>
+                                <button class="contact-action-btn">Email</button>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-header">
+                                <span class="contact-name">Emma Thompson</span>
+                                <span class="contact-status status-lead">Lead</span>
+                                <span class="lead-score">62</span>
+                            </div>
+                            <div class="contact-details">
+                                📞 +61-498-765-432 • 📧 emma@startup.io<br>
+                                🏠 First home buyer, pre-approved $650k
+                            </div>
+                            <div class="contact-actions">
+                                <button class="contact-action-btn" onclick="makeCallToContact('+61498765432', 'Emma Thompson')">Call</button>
+                                <button class="contact-action-btn">SMS</button>
+                                <button class="contact-action-btn">Email</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <span class="card-icon">📊</span>
+                            Today's Performance
+                        </h3>
+                    </div>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="calls-today">0</div>
+                            <div class="metric-label">Calls Made</div>
+                            <div class="metric-change positive">+15% vs yesterday</div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-value" id="leads-generated">0</div>
+                            <div class="metric-label">New Leads</div>
+                            <div class="metric-change positive">+25% vs yesterday</div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-value">$2.4M</div>
+                            <div class="metric-label">Pipeline Value</div>
+                            <div class="metric-change positive">+12% this week</div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-value">94.8%</div>
+                            <div class="metric-label">Call Quality</div>
+                            <div class="metric-change positive">Excellent</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call Quality Monitor -->
+            <section class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">📡</span>
+                        Real-Time Call Quality Monitor
+                    </h3>
+                </div>
+                
+                <div class="quality-monitor">
+                    <div class="quality-metric">
+                        <div class="quality-value" id="latency">28ms</div>
+                        <div class="quality-label">Latency</div>
+                    </div>
+                    <div class="quality-metric">
+                        <div class="quality-value" id="jitter">4ms</div>
+                        <div class="quality-label">Jitter</div>
+                    </div>
+                    <div class="quality-metric">
+                        <div class="quality-value" id="packet-loss">0.01%</div>
+                        <div class="quality-label">Packet Loss</div>
+                    </div>
+                    <div class="quality-metric">
+                        <div class="quality-value" id="audio-level">98%</div>
+                        <div class="quality-label">Audio Quality</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent Activity -->
+            <section class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">🕒</span>
+                        Recent Activity
+                    </h3>
+                </div>
+                
+                <div class="activity-feed" id="activity-feed">
+                    <div class="activity-item">
+                        <div class="activity-icon activity-call">📞</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Call completed</div>
+                            <div class="activity-description">5-minute call with Sarah Mitchell about property viewing</div>
+                        </div>
+                        <div class="activity-time">2 min ago</div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon activity-contact">👤</div>
+                        <div class="activity-content">
+                            <div class="activity-title">New contact added</div>
+                            <div class="activity-description">Emma Thompson via voice command</div>
+                        </div>
+                        <div class="activity-time">15 min ago</div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon activity-meeting">📅</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Meeting scheduled</div>
+                            <div class="activity-description">Property showing with Michael Chen for tomorrow 2pm</div>
+                        </div>
+                        <div class="activity-time">1 hour ago</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Insights Panel -->
+            <section class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">🧠</span>
+                        AI-Powered Insights
+                    </h3>
+                </div>
+                
+                <div class="ai-insights">
+                    <div class="insight-item">
+                        <div class="insight-icon">🎯</div>
+                        <div class="insight-content">
+                            <div class="insight-title">Lead Score Alert</div>
+                            <div class="insight-description">Sarah Mitchell's engagement score increased to 95 - consider priority follow-up</div>
+                        </div>
+                        <div class="insight-action">
+                            <button class="insight-btn">Act Now</button>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-item">
+                        <div class="insight-icon">📈</div>
+                        <div class="insight-content">
+                            <div class="insight-title">Call Pattern Analysis</div>
+                            <div class="insight-description">Best call times: 10-11 AM and 2-3 PM show 40% higher connection rates</div>
+                        </div>
+                        <div class="insight-action">
+                            <button class="insight-btn">View Report</button>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-item">
+                        <div class="insight-icon">🏡</div>
+                        <div class="insight-content">
+                            <div class="insight-title">Property Match</div>
+                            <div class="insight-description">3 new properties match Emma Thompson's criteria - auto-notification sent</div>
+                        </div>
+                        <div class="insight-action">
+                            <button class="insight-btn">Review</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- JavaScript -->
+    <script src="js/twilio-integration.js"></script>
+    <script src="js/voicrm-app.js"></script>
+</body>
+</html>
