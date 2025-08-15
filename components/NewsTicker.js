@@ -5,6 +5,7 @@ export default function NewsTicker() {
   const [newsItems, setNewsItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
+  const [expandedItem, setExpandedItem] = useState(null);
 
   // Icon mapping based on category
   const getIcon = (category) => {
@@ -117,13 +118,17 @@ export default function NewsTicker() {
                             item.trend === 'down' ? ArrowTrendingDownIcon : null;
             
             return (
-              <div key={index} className="flex items-center mr-12 whitespace-nowrap group">
+              <div 
+                key={index} 
+                className="flex items-center mr-12 whitespace-nowrap group cursor-pointer"
+                onClick={() => setExpandedItem(expandedItem === index ? null : index)}
+              >
                 <Icon className="h-5 w-5 text-[#636B56] mr-2 flex-shrink-0" />
                 
                 <div className="flex flex-col">
                   {/* Headline */}
                   <div className="flex items-center">
-                    <span className="text-base font-bold text-[#636B56] mr-2">
+                    <span className="text-base font-bold text-[#636B56] mr-2 hover:text-[#864936] transition-colors">
                       {item.title}
                     </span>
                     {TrendIcon && (
@@ -142,9 +147,14 @@ export default function NewsTicker() {
                     )}
                   </div>
                   
-                  {/* AI Summary */}
-                  <span className="text-xs text-[#864936] opacity-75">
-                    {item.aiSummary}
+                  {/* AI Summary - Show preview or full based on click */}
+                  <span className={`text-xs text-[#864936] ${expandedItem === index ? 'opacity-90' : 'opacity-75'} transition-all`}>
+                    {expandedItem === index 
+                      ? item.aiSummary 
+                      : (item.aiSummary?.length > 60 
+                          ? item.aiSummary.substring(0, 60) + '... (click for more)' 
+                          : item.aiSummary)
+                    }
                   </span>
                 </div>
                 
