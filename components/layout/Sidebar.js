@@ -33,12 +33,22 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 w-64">
+    <>
+      <style jsx>{`
+        .hide-scrollbar {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
+      <div className="flex flex-col h-full bg-gray-900 w-64">
       <div className="flex items-center justify-center h-16 bg-gray-800">
         <h1 className="text-white text-xl font-bold">VoiCRM</h1>
       </div>
       
-      <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto hide-scrollbar">
         <nav className="mt-5 flex-1 px-2 space-y-1">
           {navigation.map((item) => {
             const isActive = router.pathname === item.href;
@@ -81,6 +91,7 @@ export default function Sidebar() {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
