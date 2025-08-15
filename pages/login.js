@@ -1,12 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
+
+  // Load saved credentials on mount
+  useEffect(() => {
+    const savedUsername = localStorage.getItem('savedUsername');
+    const savedPassword = localStorage.getItem('savedPassword');
+    if (savedUsername && savedPassword) {
+      setUsername(savedUsername);
+      setPassword(savedPassword);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,8 +37,16 @@ export default function Login() {
       const data = await res.json();
 
       if (res.ok) {
+        // Save credentials if remember me is checked
+        if (rememberMe) {
+          localStorage.setItem('savedUsername', username);
+          localStorage.setItem('savedPassword', password);
+        } else {
+          localStorage.removeItem('savedUsername');
+          localStorage.removeItem('savedPassword');
+        }
         // Redirect to dashboard
-        router.push('/');
+        router.push('/dashboard');
       } else {
         setError(data.error || 'Invalid credentials');
       }
@@ -65,14 +87,40 @@ export default function Login() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Password
             </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#636B56] focus:border-transparent transition-all text-gray-900 bg-white"
+                placeholder="Enter password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center">
             <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#636B56] focus:border-transparent transition-all text-gray-900 bg-white"
-              placeholder="Enter password"
-              required
+              id="remember-me"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="h-4 w-4 text-[#636B56] focus:ring-[#636B56] border-gray-300 rounded"
             />
+            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+              Remember me
+            </label>
           </div>
 
           {error && (

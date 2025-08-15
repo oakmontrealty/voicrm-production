@@ -20,7 +20,7 @@ export function middleware(request) {
     // Check for auth cookie
     const authToken = request.cookies.get('auth-token');
     
-    if (authToken && authToken.value === 'authenticated') {
+    if (authToken && authToken.value) {
       // User is logged in, allow access
       return NextResponse.next();
     }
