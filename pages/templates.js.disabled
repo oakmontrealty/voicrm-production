@@ -1,0 +1,231 @@
+import { useState } from 'react';
+import Layout from '../components/Layout';
+
+export default function Templates() {
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [templates] = useState([
+    {
+      id: 1,
+      name: 'Property Inquiry Follow-up',
+      category: 'email',
+      type: 'Email',
+      usage: 342,
+      content: 'Hi {{name}}, Thank you for your interest in {{property_address}}. I wanted to follow up...'
+    },
+    {
+      id: 2,
+      name: 'Viewing Confirmation',
+      category: 'sms',
+      type: 'SMS',
+      usage: 256,
+      content: 'Hi {{name}}, confirming your viewing at {{property}} on {{date}} at {{time}}. Reply Y to confirm.'
+    },
+    {
+      id: 3,
+      name: 'New Listing Alert',
+      category: 'email',
+      type: 'Email',
+      usage: 189,
+      content: 'Exciting news! A new property matching your criteria has just been listed...'
+    },
+    {
+      id: 4,
+      name: 'Open House Invitation',
+      category: 'sms',
+      type: 'SMS',
+      usage: 167,
+      content: 'Open house this Saturday at {{property}}! Join us from {{time}}. RSVP: {{link}}'
+    },
+    {
+      id: 5,
+      name: 'Contract Follow-up',
+      category: 'email',
+      type: 'Email',
+      usage: 98,
+      content: 'Hi {{name}}, Following up on the contract for {{property}}. Please review and sign...'
+    },
+    {
+      id: 6,
+      name: 'Price Update',
+      category: 'sms',
+      type: 'SMS',
+      usage: 76,
+      content: 'Good news! The property at {{address}} has been reduced to {{price}}. Interested?'
+    }
+  ]);
+
+  const filteredTemplates = selectedCategory === 'all' 
+    ? templates 
+    : templates.filter(t => t.category === selectedCategory);
+
+  return (
+    <Layout>
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-[#636B56]" style={{ fontFamily: 'Forum, serif' }}>
+                Message Templates
+              </h1>
+              <p className="text-[#7a7a7a] mt-2">Pre-written templates for emails, SMS, and campaigns</p>
+            </div>
+            <button className="bg-[#636B56] text-white px-4 py-2 rounded-lg hover:bg-[#7a8365] transition-colors">
+              + Create Template
+            </button>
+          </div>
+        </div>
+
+        {/* Template Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white rounded-xl shadow-sm p-4">
+            <p className="text-sm text-gray-600">Total Templates</p>
+            <p className="text-2xl font-bold text-[#636B56]">{templates.length}</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm p-4">
+            <p className="text-sm text-gray-600">Email Templates</p>
+            <p className="text-2xl font-bold text-[#636B56]">
+              {templates.filter(t => t.category === 'email').length}
+            </p>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm p-4">
+            <p className="text-sm text-gray-600">SMS Templates</p>
+            <p className="text-2xl font-bold text-[#636B56]">
+              {templates.filter(t => t.category === 'sms').length}
+            </p>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm p-4">
+            <p className="text-sm text-gray-600">Total Usage</p>
+            <p className="text-2xl font-bold text-[#636B56]">
+              {templates.reduce((sum, t) => sum + t.usage, 0)}
+            </p>
+          </div>
+        </div>
+
+        {/* Category Filter */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                selectedCategory === 'all' 
+                  ? 'bg-[#636B56] text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              All Templates
+            </button>
+            <button
+              onClick={() => setSelectedCategory('email')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                selectedCategory === 'email' 
+                  ? 'bg-[#636B56] text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Email
+            </button>
+            <button
+              onClick={() => setSelectedCategory('sms')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                selectedCategory === 'sms' 
+                  ? 'bg-[#636B56] text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              SMS
+            </button>
+            <button
+              onClick={() => setSelectedCategory('voice')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                selectedCategory === 'voice' 
+                  ? 'bg-[#636B56] text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Voice Scripts
+            </button>
+          </div>
+        </div>
+
+        {/* Templates Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredTemplates.map(template => (
+            <div key={template.id} className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="font-semibold text-lg">{template.name}</h3>
+                  <div className="flex gap-2 mt-1">
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      template.category === 'email' 
+                        ? 'bg-blue-100 text-blue-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {template.type}
+                    </span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                      Used {template.usage} times
+                    </span>
+                  </div>
+                </div>
+                <div className="flex gap-1">
+                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                <p className="text-sm text-gray-700 font-mono">{template.content}</p>
+              </div>
+
+              <div className="text-xs text-gray-500 mb-3">
+                Variables: <span className="font-mono bg-yellow-100 px-1 rounded">{{name}}</span>, 
+                <span className="font-mono bg-yellow-100 px-1 rounded ml-1">{{property}}</span>, 
+                <span className="font-mono bg-yellow-100 px-1 rounded ml-1">{{date}}</span>
+              </div>
+
+              <div className="flex gap-2">
+                <button className="flex-1 bg-[#636B56] text-white px-3 py-1.5 rounded-lg hover:bg-[#7a8365] transition-colors text-sm">
+                  Use Template
+                </button>
+                <button className="flex-1 border border-[#636B56] text-[#636B56] px-3 py-1.5 rounded-lg hover:bg-[#636B56] hover:text-white transition-colors text-sm">
+                  Preview
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Template Categories */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-xl font-semibold text-[#636B56] mb-4">Template Categories</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="border rounded-lg p-4 hover:border-[#636B56] transition-colors cursor-pointer">
+              <h3 className="font-medium mb-2">Lead Follow-up</h3>
+              <p className="text-sm text-gray-600">Initial contact and nurturing</p>
+            </div>
+            <div className="border rounded-lg p-4 hover:border-[#636B56] transition-colors cursor-pointer">
+              <h3 className="font-medium mb-2">Property Updates</h3>
+              <p className="text-sm text-gray-600">New listings and price changes</p>
+            </div>
+            <div className="border rounded-lg p-4 hover:border-[#636B56] transition-colors cursor-pointer">
+              <h3 className="font-medium mb-2">Appointments</h3>
+              <p className="text-sm text-gray-600">Scheduling and confirmations</p>
+            </div>
+            <div className="border rounded-lg p-4 hover:border-[#636B56] transition-colors cursor-pointer">
+              <h3 className="font-medium mb-2">Transactions</h3>
+              <p className="text-sm text-gray-600">Contracts and closing</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+}

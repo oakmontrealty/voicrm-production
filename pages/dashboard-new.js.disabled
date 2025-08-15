@@ -1,0 +1,231 @@
+import { useState, useEffect } from 'react';
+import Layout from '../components/Layout';
+import VoiCRMBrandedDashboard from '../components/VoiCRMBrandedDashboard';
+import IndustryLeadingVoIP from '../components/IndustryLeadingVoIP';
+import ClientFocusedWhisper from '../components/ClientFocusedWhisper';
+import EnhancedAIWhisperer from '../components/EnhancedAIWhisperer';
+import PipedriveSync from '../components/PipedriveSync';
+import ScheduledCalling from '../components/ScheduledCalling';
+import SmartDialer from '../components/SmartDialer';
+import CircuitInspiredMapping from '../components/CircuitInspiredMapping';
+import AIInboundHandler from '../components/AIInboundHandler';
+
+export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showFeature, setShowFeature] = useState(null);
+
+  const features = [
+    {
+      id: 'overview',
+      name: 'Dashboard Overview',
+      icon: '📊',
+      component: VoiCRMBrandedDashboard,
+      description: 'Real-time CRM statistics and insights'
+    },
+    {
+      id: 'voip',
+      name: 'Industry-Leading VoIP',
+      icon: '🎯',
+      component: IndustryLeadingVoIP,
+      description: 'Premium call quality and advanced features'
+    },
+    {
+      id: 'ai-whisper',
+      name: 'AI Client Whisper',
+      icon: '🎤',
+      component: ClientFocusedWhisper,
+      description: 'Client-focused speech analysis with instant responses'
+    },
+    {
+      id: 'enhanced-ai',
+      name: 'Enhanced AI Whisper',
+      icon: '🤖',
+      component: EnhancedAIWhisperer,
+      description: 'Ultra-fast AI transcription and analysis'
+    },
+    {
+      id: 'inbound-ai',
+      name: 'AI Inbound Handler',
+      icon: '📞',
+      component: AIInboundHandler,
+      description: '11Labs voice cloning for inbound calls'
+    },
+    {
+      id: 'pipedrive',
+      name: 'PipeDrive Sync',
+      icon: '🔄',
+      component: PipedriveSync,
+      description: 'Full contact synchronization with PipeDrive'
+    },
+    {
+      id: 'scheduled-calls',
+      name: 'Scheduled Calling',
+      icon: '📅',
+      component: ScheduledCalling,
+      description: 'Automated call scheduling and management'
+    },
+    {
+      id: 'smart-dialer',
+      name: 'Smart Dialer',
+      icon: '🎯',
+      component: SmartDialer,
+      description: 'AI-powered property insights and smart dialing'
+    },
+    {
+      id: 'mapping',
+      name: 'Circuit Mapping',
+      icon: '🗺️',
+      component: CircuitInspiredMapping,
+      description: 'Advanced mapping with route optimization'
+    }
+  ];
+
+  const renderActiveFeature = () => {
+    const feature = features.find(f => f.id === activeTab);
+    if (!feature) return null;
+
+    const Component = feature.component;
+    return <Component />;
+  };
+
+  return (
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        {/* VoiCRM Header */}
+        <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-800 shadow-xl">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-bold text-white flex items-center">
+                  <span className="mr-3 text-3xl">🏠</span>
+                  VoiCRM Features Dashboard
+                  <span className="ml-3 text-xs bg-white bg-opacity-20 px-3 py-1 rounded-full">
+                    All Systems Active
+                  </span>
+                </h1>
+                <p className="text-blue-100 text-sm mt-1">
+                  Complete Real Estate CRM with AI-Powered Features
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Feature Navigation Tabs */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex space-x-1 overflow-x-auto py-4">
+              {features.map((feature) => (
+                <button
+                  key={feature.id}
+                  onClick={() => setActiveTab(feature.id)}
+                  className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-colors ${
+                    activeTab === feature.id
+                      ? 'bg-blue-500 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <span className="mr-2 text-lg">{feature.icon}</span>
+                  {feature.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Feature Description */}
+        <div className="bg-blue-50 border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center">
+              <div className="text-2xl mr-3">
+                {features.find(f => f.id === activeTab)?.icon}
+              </div>
+              <div>
+                <h2 className="font-semibold text-gray-800">
+                  {features.find(f => f.id === activeTab)?.name}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {features.find(f => f.id === activeTab)?.description}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Active Feature Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            {renderActiveFeature()}
+          </div>
+        </div>
+
+        {/* Feature Grid Overview */}
+        {activeTab === 'overview' && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">Available Features</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {features.filter(f => f.id !== 'overview').map((feature) => (
+                  <div
+                    key={feature.id}
+                    className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border-2 border-transparent hover:border-blue-200"
+                    onClick={() => setActiveTab(feature.id)}
+                  >
+                    <div className="text-4xl mb-4">{feature.icon}</div>
+                    <h3 className="text-lg font-bold text-gray-800 mb-2">{feature.name}</h3>
+                    <p className="text-gray-600 text-sm mb-4">{feature.description}</p>
+                    <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                      Launch Feature →
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* VoiCRM Capabilities Overview */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-8 text-white">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold mb-4">🚀 VoiCRM Unfair Advantages</h2>
+                <p className="text-blue-100 text-lg">Features that put you years ahead of the competition</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="text-4xl mb-3">🤖</div>
+                  <h3 className="font-bold mb-2">AI-Powered</h3>
+                  <p className="text-blue-100 text-sm">Real-time speech analysis and instant response generation</p>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-4xl mb-3">📡</div>
+                  <h3 className="font-bold mb-2">Offline-First</h3>
+                  <p className="text-blue-100 text-sm">Works without internet, syncs automatically when connected</p>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-4xl mb-3">🎯</div>
+                  <h3 className="font-bold mb-2">HD VoIP</h3>
+                  <p className="text-blue-100 text-sm">Industry-leading call quality with advanced features</p>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-4xl mb-3">🌍</div>
+                  <h3 className="font-bold mb-2">Global Ready</h3>
+                  <p className="text-blue-100 text-sm">Optimized for international teams with accent modification</p>
+                </div>
+              </div>
+
+              <div className="text-center mt-8">
+                <div className="inline-flex items-center bg-white bg-opacity-20 rounded-full px-6 py-3">
+                  <span className="text-2xl mr-3">🏠</span>
+                  <span className="font-bold text-lg">VoiCRM - The Future of Real Estate</span>
+                  <span className="text-2xl ml-3">✨</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+}

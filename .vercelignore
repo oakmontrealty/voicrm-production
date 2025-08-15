@@ -1,0 +1,14 @@
+.git
+.next
+node_modules
+*.log
+.env.local
+.DS_Store
+android
+ios
+capacitor.config.json
+mobile-*
+CREDENTIALS.md
+docs
+scripts
+test-*

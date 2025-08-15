@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start http://localhost:3000/twilio-browser-phone)",
+      "Bash(timeout 10 npx localtunnel --port 3000 --print-requests)",
+      "Bash(grep:*)",
+      "Bash(start http://localhost:3000/contacts)",
+      "Bash(start http://localhost:3000/test-analytics)",
+      "Bash(npx cap:*)",
+      "Bash(del:*)",
+      "Bash(vercel:*)",
+      "Bash(for file in pages/analytics.js pages/call-analytics.js pages/cma.js pages/property-analysis.js pages/reports.js)",
+      "Bash(do sed -i \"s/TrendingUpIcon/ArrowTrendingUpIcon/g\" \"$file\")",
+      "Bash(done)",
+      "Bash(start http://localhost:3005)",
+      "Bash(for page in / /contacts /calls /messages /whisperer /powerdialer /simple-phone /twilio-browser-phone /property-analysis /reports /cma /analytics /call-analytics)",
+      "Bash(do echo \"Testing $page\")",
+      "Bash(for:*)",
+      "Bash(do echo \"Testing $api\")",
+      "Bash(start http://localhost:3005/contacts)",
+      "Bash(start http://localhost:3005/login)",
+      "Bash(true)",
+      "WebFetch(domain:voicrm.com)",
+      "Bash(timeout 15 curl -s https://voicrm.com)",
+      "Bash(timeout 10 curl -s https://voicrm.com)",
+      "Bash(timeout 10 curl -s -I https://voicrm.com)",
+      "Bash(start http://localhost:3003/messages)",
+      "Bash(npx next export:*)",
+      "Bash(npx supabase db push:*)",
+      "Bash(start http://localhost:3000/messages)",
+      "Bash(npm run build:*)",
+      "Bash(npm run export:*)",
+      "Bash(timeout:*)",
+      "Bash(git rm:*)",
+      "Bash(git checkout:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "C:\\Users\\User\\Desktop\\VOICRM-CREDENTIALS"
+    ]
+  }
+}

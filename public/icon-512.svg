@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#636B56;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#864936;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" fill="url(#bgGradient)"/>
+  
+  <!-- VoiCRM Text -->
+  <text x="50%" y="45%" 
+        dominant-baseline="middle" 
+        text-anchor="middle" 
+        fill="white" 
+        font-family="Forum, serif" 
+        font-size="92.16px" 
+        font-weight="bold">
+    VoiCRM
+  </text>
+  
+  <!-- Tagline -->
+  <text x="50%" y="62%" 
+        dominant-baseline="middle" 
+        text-anchor="middle" 
+        fill="white" 
+        font-family="Avenir, sans-serif" 
+        font-size="30.72px" 
+        opacity="0.9">
+    Every Second Counts
+  </text>
+  
+  <!-- Phone Icon -->
+  <g transform="translate(256, 384) scale(1.024)">
+    <path d="M -30 -10 C -30 -20, -20 -30, -10 -30 L 10 -30 C 20 -30, 30 -20, 30 -10 L 30 10 C 30 20, 20 30, 10 30 L -10 30 C -20 30, -30 20, -30 10 Z" 
+          fill="rgba(255,255,255,0.2)"/>
+    <path d="M -15 -5 C -15 -10, -10 -15, -5 -15 L 5 -15 C 10 -15, 15 -10, 15 -5 L 15 5 C 15 10, 10 15, 5 15 L -5 15 C -10 15, -15 10, -15 5 Z" 
+          fill="white"/>
+  </g>
+</svg>

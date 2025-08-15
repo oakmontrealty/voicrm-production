@@ -11,7 +11,7 @@ export default function handler(req, res) {
   // TwiML response for incoming calls
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say voice="alice">Welcome to VoiCRM by Oakmont Realty.</Say>
+    <Say voice="alice">Welcome to VoiCRM Real Estate Services.</Say>
     <Pause length="1"/>
     <Say>Connecting you to an agent.</Say>
     <Dial timeout="30">

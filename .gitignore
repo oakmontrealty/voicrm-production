@@ -26,6 +26,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env.local
 .env
 
 # vercel
@@ -34,3 +35,23 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# mobile
+/android
+/ios
+capacitor.config.json
+
+# credentials
+CREDENTIALS.md
+*credentials*
+test-sms.js
+SETUP.md
+pages/simple-call.js
+
+# IDE
+.idea
+.vscode
+.claude
+
+# OS
+Thumbs.db

@@ -1,0 +1,276 @@
+/* Mobile Responsive Styles for VoiCRM */
+
+/* Mobile Phone Dialer Optimizations */
+@media (max-width: 768px) {
+  /* Hide desktop-only elements */
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Full-screen phone dialer on mobile */
+  .phone-dialer-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    background: white;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Large, touch-friendly dialpad buttons */
+  .dialpad-button {
+    min-height: 60px;
+    font-size: 24px;
+    font-weight: 600;
+    border-radius: 12px;
+    background: #f3f4f6;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .dialpad-button:active {
+    background: #636B56;
+    color: white;
+    transform: scale(0.95);
+  }
+
+  /* Call button - make it prominent */
+  .call-button {
+    min-height: 70px;
+    font-size: 18px;
+    font-weight: bold;
+    background: #636B56;
+    color: white;
+    border-radius: 35px;
+    box-shadow: 0 4px 15px rgba(99, 107, 86, 0.3);
+  }
+
+  .call-button:active {
+    transform: scale(0.95);
+  }
+
+  .end-call-button {
+    min-height: 70px;
+    background: #dc2626;
+    color: white;
+    border-radius: 35px;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+  }
+
+  /* Contact list mobile optimization */
+  .contact-list-mobile {
+    padding: 0;
+  }
+
+  .contact-list-mobile .contact-item {
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .contact-list-mobile .contact-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .contact-list-mobile .contact-phone {
+    font-size: 14px;
+    color: #6b7280;
+  }
+
+  /* Swipeable cards */
+  .swipeable-card {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Search bar mobile */
+  .search-input-mobile {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 24px;
+    background: #f3f4f6;
+    border: none;
+  }
+
+  /* Floating action button */
+  .fab {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+    background: #636B56;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 40;
+  }
+
+  /* Modal improvements for mobile */
+  .modal-mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: 60;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-header-mobile {
+    position: sticky;
+    top: 0;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px;
+    z-index: 10;
+  }
+
+  /* Table responsive */
+  .table-container-mobile {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-mobile {
+    min-width: 100%;
+  }
+
+  /* Form inputs mobile */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Bottom navigation safe area for iPhones */
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Landscape mode adjustments */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .dialpad-button {
+      min-height: 45px;
+      font-size: 20px;
+    }
+
+    .call-button,
+    .end-call-button {
+      min-height: 50px;
+    }
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .sidebar {
+    width: 80px;
+  }
+
+  .sidebar-expanded {
+    width: 240px;
+  }
+
+  .main-content {
+    margin-left: 80px;
+  }
+
+  .grid-tablet {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  .hover\\:bg-gray-50:hover {
+    background: transparent;
+  }
+
+  /* Add tap highlight */
+  button,
+  a,
+  .clickable {
+    -webkit-tap-highlight-color: rgba(99, 107, 86, 0.1);
+  }
+
+  /* Larger touch targets */
+  button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .dark-mode-auto {
+    background: #1f2937;
+    color: #f3f4f6;
+  }
+
+  .dark-mode-auto input,
+  .dark-mode-auto select,
+  .dark-mode-auto textarea {
+    background: #374151;
+    color: #f3f4f6;
+    border-color: #4b5563;
+  }
+}
+
+/* Performance optimizations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.hardware-accelerated {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Smooth scrolling */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Loading skeleton animations */
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeleton {
+  display: inline-block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    #f3f4f6 0px,
+    #e5e7eb 40px,
+    #f3f4f6 80px
+  );
+  background-size: 200px 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
