@@ -44,14 +44,15 @@ export default function TestSMS() {
               Phone Number (with country code)
             </label>
             <input
-              type="tel"
+              type="text"
+              inputMode="tel"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               placeholder="+61482080888"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck="false"
+              autoComplete="new-password"
+              name="test-phone-field"
+              id="test-phone-field"
+              data-form-type="other"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
             />
             <p className="text-xs text-gray-500 mt-1">
