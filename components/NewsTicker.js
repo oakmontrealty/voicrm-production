@@ -104,18 +104,12 @@ export default function NewsTicker() {
 
   return (
     <div 
-      className="relative overflow-hidden bg-gradient-to-r from-[#636B56]/5 to-[#B28354]/5 backdrop-blur-sm py-3"
+      className="relative overflow-hidden bg-gradient-to-r from-[#636B56]/5 to-[#B28354]/5 backdrop-blur-sm py-2"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* News Label */}
-      <div className="absolute left-0 top-0 bottom-0 z-10 bg-[#636B56] px-4 flex items-center">
-        <NewspaperIcon className="h-5 w-5 text-white mr-2" />
-        <span className="text-white font-bold text-sm uppercase tracking-wider">Live Market</span>
-      </div>
-      
-      {/* Scrolling Content */}
-      <div className={`flex ${isPaused ? '' : 'animate-scroll'} ml-32`}>
+      {/* Scrolling Content - no label box */}
+      <div className={`flex ${isPaused ? '' : 'animate-scroll'}`}>
         <div className="flex items-center">
           {displayItems.map((item, index) => {
             const Icon = getIcon(item.category);
@@ -149,7 +143,7 @@ export default function NewsTicker() {
                   </div>
                   
                   {/* AI Summary */}
-                  <span className="text-sm text-[#864936] mt-0.5 opacity-90">
+                  <span className="text-xs text-[#864936] opacity-75">
                     {item.aiSummary}
                   </span>
                 </div>
@@ -165,7 +159,7 @@ export default function NewsTicker() {
       </div>
       
       {/* Gradient overlays for fade effect */}
-      <div className="absolute left-32 top-0 bottom-0 w-20 bg-gradient-to-r from-[#F8F2E7] to-transparent pointer-events-none" />
+      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-[#F8F2E7] to-transparent pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-[#F8F2E7] to-transparent pointer-events-none" />
       
       <style jsx>{`
