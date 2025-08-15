@@ -9,6 +9,9 @@ export default function Messages() {
   const messageEndRef = useRef(null);
   
   const [conversations, setConversations] = useState([]);
+  const [showComposeModal, setShowComposeModal] = useState(false);
+  const [newContactPhone, setNewContactPhone] = useState('');
+  const [newContactName, setNewContactName] = useState('');
 
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -519,24 +522,7 @@ export default function Messages() {
             <div className="flex justify-between items-center mb-3">
               <h2 className="text-xl font-semibold text-[#636B56]">Texts</h2>
               <button 
-                onClick={() => {
-                  // Create new conversation
-                  const phoneNumber = prompt('Enter phone number to message:');
-                  if (phoneNumber) {
-                    const newConvo = {
-                      id: conversations.length + 1,
-                      contact: 'New Contact',
-                      phone: phoneNumber,
-                      lastMessage: '',
-                      timestamp: 'Now',
-                      unread: 0,
-                      avatar: 'NC',
-                      status: 'new'
-                    };
-                    setConversations([newConvo, ...conversations]);
-                    setSelectedConversation(newConvo);
-                  }
-                }}
+                onClick={() => setShowComposeModal(true)}
                 className="bg-[#636B56] text-white px-3 py-1.5 rounded-lg text-sm hover:bg-[#7a8365] flex items-center gap-1"
               >
                 <span className="text-lg">+</span> Compose
@@ -767,6 +753,85 @@ export default function Messages() {
           )}
         </div>
       </div>
+      {/* Compose New Message Modal */}
+      {showComposeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+            <h2 className="text-2xl font-bold text-[#636B56] mb-4">New Message</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Contact Name
+                </label>
+                <input
+                  type="text"
+                  value={newContactName}
+                  onChange={(e) => setNewContactName(e.target.value)}
+                  placeholder="John Smith (optional)"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#636B56]"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  inputMode="tel"
+                  value={newContactPhone}
+                  onChange={(e) => setNewContactPhone(e.target.value)}
+                  placeholder="+61412345678"
+                  autoComplete="new-password"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#636B56]"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Include country code (e.g., +61 for Australia)
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  if (newContactPhone) {
+                    const newConvo = {
+                      id: Date.now(),
+                      contact: newContactName || 'New Contact',
+                      phone: newContactPhone,
+                      lastMessage: '',
+                      timestamp: 'Now',
+                      unread: 0,
+                      avatar: (newContactName || 'NC').substring(0, 2).toUpperCase(),
+                      status: 'new'
+                    };
+                    setConversations([newConvo, ...conversations]);
+                    setSelectedConversation(newConvo);
+                    setShowComposeModal(false);
+                    setNewContactPhone('');
+                    setNewContactName('');
+                  }
+                }}
+                disabled={!newContactPhone}
+                className="flex-1 bg-[#636B56] text-white px-4 py-2 rounded-lg hover:bg-[#7a8365] disabled:opacity-50"
+              >
+                Start Conversation
+              </button>
+              <button
+                onClick={() => {
+                  setShowComposeModal(false);
+                  setNewContactPhone('');
+                  setNewContactName('');
+                }}
+                className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
