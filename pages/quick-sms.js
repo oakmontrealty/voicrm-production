@@ -10,6 +10,9 @@ export default function QuickSMS() {
   const [error, setError] = useState(null);
 
   const sendSMS = async () => {
+    // Prevent double-clicks
+    if (loading) return;
+    
     setLoading(true);
     setError(null);
     setResult(null);

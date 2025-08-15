@@ -1,6 +1,9 @@
 import twilio from 'twilio';
 import { getTwilioConfig } from '../../../lib/twilio-config';
 
+// Track recent messages to prevent duplicates
+const recentMessages = new Map();
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -11,6 +14,35 @@ export default async function handler(req, res) {
   if (!to || !message) {
     return res.status(400).json({ error: 'Phone number and message are required' });
   }
+
+  // Create a unique key for this message
+  const messageKey = `${to}-${message.substring(0, 50)}-${Date.now()}`;
+  
+  // Check if we sent this exact message in the last 5 seconds
+  const now = Date.now();
+  for (const [key, timestamp] of recentMessages.entries()) {
+    if (now - timestamp > 5000) {
+      recentMessages.delete(key); // Clean up old entries
+    }
+  }
+  
+  // Check for duplicate
+  const similarKey = Array.from(recentMessages.keys()).find(key => 
+    key.startsWith(`${to}-${message.substring(0, 50)}`)
+  );
+  
+  if (similarKey && now - recentMessages.get(similarKey) < 5000) {
+    console.log('Duplicate SMS prevented:', { to, message: message.substring(0, 30) });
+    return res.status(200).json({ 
+      success: true,
+      messageId: 'duplicate-prevented',
+      status: 'blocked',
+      note: 'Duplicate message prevented'
+    });
+  }
+  
+  // Record this message
+  recentMessages.set(messageKey, now);
 
   try {
     // Get Twilio configuration
