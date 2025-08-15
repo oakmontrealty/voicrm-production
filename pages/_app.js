@@ -19,20 +19,6 @@ export default function App({ Component, pageProps }) {
   const [navigationError, setNavigationError] = useState(false)
   
   useEffect(() => {
-    // Check authentication
-    const publicPaths = ['/login', '/api'];
-    const isPublicPath = publicPaths.some(path => router.pathname.startsWith(path));
-    
-    if (!isPublicPath && typeof window !== 'undefined') {
-      // Check both cookie and localStorage for auth
-      const cookieToken = document.cookie.split('; ').find(row => row.startsWith('auth-token='));
-      const localToken = localStorage.getItem('authToken');
-      
-      if (!cookieToken && !localToken && router.pathname !== '/login') {
-        router.push('/login?from=' + encodeURIComponent(router.pathname));
-        return;
-      }
-    }
     // Initialize performance optimizations
     initPerformanceOptimizations();
     

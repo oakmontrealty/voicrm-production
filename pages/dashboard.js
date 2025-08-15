@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import { MagnifyingGlassIcon, PlusIcon, FunnelIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import { 
@@ -39,6 +40,7 @@ import {
 } from 'recharts';
 
 export default function Dashboard() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [contacts, setContacts] = useState([]);
@@ -77,9 +79,16 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
+    // Check authentication
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+      router.push('/login');
+      return;
+    }
+    
     loadContacts();
     loadDashboardData();
-  }, [searchQuery, activeTab, timeRange]);
+  }, [searchQuery, activeTab, timeRange, router]);
 
   const loadContacts = async () => {
     setLoading(true);
