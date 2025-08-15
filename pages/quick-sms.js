@@ -55,6 +55,10 @@ export default function QuickSMS() {
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="+61412345678"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#636B56]"
               />
               <p className="text-xs text-gray-500 mt-1">

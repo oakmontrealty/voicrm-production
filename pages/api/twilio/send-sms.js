@@ -17,7 +17,15 @@ export default async function handler(req, res) {
     const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
     if (!accountSid || !authToken || !fromNumber) {
-      return res.status(500).json({ error: 'Twilio credentials not configured' });
+      console.error('Twilio credentials missing:', {
+        hasAccountSid: !!accountSid,
+        hasAuthToken: !!authToken,
+        hasFromNumber: !!fromNumber
+      });
+      return res.status(500).json({ 
+        error: 'Twilio credentials not configured. Please check environment variables in Vercel dashboard.',
+        details: 'TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER must be set'
+      });
     }
 
     const client = twilio(accountSid, authToken);
