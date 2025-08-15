@@ -1,4 +1,5 @@
 import twilio from 'twilio';
+import { getTwilioConfig } from '../../../lib/twilio-config';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,28 +13,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
-    const fromNumber = process.env.TWILIO_PHONE_NUMBER;
-
-    if (!accountSid || !authToken || !fromNumber) {
-      console.error('Twilio credentials missing:', {
-        hasAccountSid: !!accountSid,
-        hasAuthToken: !!authToken,
-        hasFromNumber: !!fromNumber
-      });
+    // Get Twilio configuration
+    let config;
+    try {
+      config = getTwilioConfig();
+    } catch (configError) {
+      console.error('Twilio config error:', configError.message);
       return res.status(500).json({ 
-        error: 'Twilio credentials not configured. Please check environment variables in Vercel dashboard.',
-        details: 'TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER must be set'
+        error: 'Twilio configuration error',
+        details: configError.message
       });
     }
 
-    const client = twilio(accountSid, authToken);
+    const client = twilio(config.accountSid, config.authToken);
 
     // Prepare message options
     const messageOptions = {
       body: message,
-      from: fromNumber,
+      from: config.phoneNumber,
       to: to
     };
 
