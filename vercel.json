@@ -82,7 +82,9 @@
     }
   },
   "github": {
-    "silent": true
+    "enabled": true,
+    "autoAlias": true,
+    "silent": false
   },
   "redirects": [
     {
