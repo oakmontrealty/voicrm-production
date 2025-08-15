@@ -3,13 +3,35 @@ import { withCache, CacheStrategies, setCacheHeaders } from '../../lib/cache';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Check if Supabase is configured
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('Supabase not configured - using mock data');
+}
+
+const supabase = supabaseUrl && supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : null;
 
 async function handler(req, res) {
   const { method } = req;
 
   switch (method) {
     case 'GET':
+      // If Supabase not configured, return mock data
+      if (!supabase) {
+        return res.status(200).json({
+          contacts: [
+            { id: 1, name: 'John Smith', phone_number: '+61412345678', email: 'john@example.com', status: 'active', company: 'ABC Corp' },
+            { id: 2, name: 'Sarah Johnson', phone_number: '+61423456789', email: 'sarah@example.com', status: 'lead', company: 'XYZ Ltd' },
+            { id: 3, name: 'Mike Wilson', phone_number: '+61434567890', email: 'mike@example.com', status: 'active', company: 'Tech Inc' }
+          ],
+          total: 3,
+          page: 1,
+          totalPages: 1
+        });
+      }
+      
       try {
         // Extract query parameters
         const { 

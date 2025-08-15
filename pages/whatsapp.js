@@ -26,24 +26,38 @@ export default function WhatsApp() {
   const loadConversations = async () => {
     setLoading(true);
     try {
-      // Fetch contacts to create conversations
+      // Try to fetch contacts
       const contactsRes = await fetch('/api/contacts');
-      const contacts = await contactsRes.json();
+      let contacts = [];
+      
+      if (contactsRes.ok) {
+        const data = await contactsRes.json();
+        contacts = data.contacts || data || [];
+      }
+      
+      // If no contacts, create some demo conversations
+      if (!contacts.length) {
+        contacts = [
+          { id: 1, name: 'John Smith', phone_number: '+61412345678', status: 'active', company: 'ABC Corp' },
+          { id: 2, name: 'Sarah Johnson', phone_number: '+61423456789', status: 'lead', company: 'XYZ Ltd' },
+          { id: 3, name: 'Mike Wilson', phone_number: '+61434567890', status: 'active', company: 'Tech Inc' }
+        ];
+      }
       
       // Create WhatsApp conversations from contacts with phone numbers
-      const whatsappConversations = (contacts || [])
-        .filter(c => c.phone_number)
+      const whatsappConversations = contacts
+        .filter(c => c.phone_number || c.phone)
         .slice(0, 20)
         .map(contact => ({
           id: contact.id,
           name: contact.name,
-          phone: contact.phone_number,
+          phone: contact.phone_number || contact.phone,
           lastMessage: generateLastMessage(contact),
           timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
           unreadCount: Math.floor(Math.random() * 5),
           status: contact.status,
           company: contact.company,
-          avatar: contact.name.charAt(0).toUpperCase()
+          avatar: (contact.name || 'U').charAt(0).toUpperCase()
         }));
       
       setConversations(whatsappConversations.sort((a, b) => b.timestamp - a.timestamp));
