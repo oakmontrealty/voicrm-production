@@ -1,218 +1,162 @@
 import { useState, useEffect } from 'react';
-import { ArrowTrendingUpIcon, ArrowTrendingDownIcon, BuildingOfficeIcon, CurrencyDollarIcon, HomeIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { ArrowTrendingUpIcon, ArrowTrendingDownIcon, BuildingOfficeIcon, CurrencyDollarIcon, HomeIcon, ChartBarIcon, NewspaperIcon } from '@heroicons/react/24/outline';
 
 export default function NewsTicker() {
   const [newsItems, setNewsItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
 
-  // Default news items while loading or as fallback - Sydney & South West Sydney focused
-  const defaultNews = [
-    { 
-      text: "Liverpool median house price hits $1.15M", 
-      trend: "up", 
-      icon: HomeIcon,
-      change: "+8.3%"
-    },
-    { 
-      text: "Campbelltown growth outpaces Sydney at 12% YoY", 
-      trend: "up", 
-      icon: ChartBarIcon,
-      change: "+12%"
-    },
-    { 
-      text: "Western Sydney Airport drives Badgerys Creek prices up", 
-      trend: "up", 
-      icon: BuildingOfficeIcon,
-      change: "+15.2%"
-    },
-    { 
-      text: "Oran Park median reaches $1.3M for houses", 
-      trend: "up", 
-      icon: HomeIcon,
-      change: "+9.5%"
-    },
-    { 
-      text: "Camden Council approves 2,500 new homes", 
-      trend: "up", 
-      icon: BuildingOfficeIcon,
-      change: "NEW"
-    },
-    { 
-      text: "Leppington station precinct development begins", 
-      trend: "up", 
-      icon: BuildingOfficeIcon,
-      change: "+18%"
-    },
-    { 
-      text: "Gregory Hills shopping centre expansion approved", 
-      trend: "up", 
-      icon: ChartBarIcon,
-      change: "$450M"
-    },
-    { 
-      text: "Edmondson Park units average $750K", 
-      trend: "up", 
-      icon: HomeIcon,
-      change: "+6.7%"
-    },
-    { 
-      text: "Macarthur region population to hit 650K by 2036", 
-      trend: "up", 
-      icon: ChartBarIcon,
-      change: "+35%"
-    },
-    { 
-      text: "Penrith median house price breaks $1M barrier", 
-      trend: "up", 
-      icon: HomeIcon,
-      change: "+11.2%"
-    },
-    { 
-      text: "South West Sydney rental yields at 4.8%", 
-      trend: "up", 
-      icon: CurrencyDollarIcon,
-      change: "+0.6%"
-    },
-    { 
-      text: "Fairfield LGA records 73% auction clearance", 
-      trend: "up", 
-      icon: ChartBarIcon,
-      change: "+5%"
-    },
-    { 
-      text: "Bankstown CBD transformation attracts $2B investment", 
-      trend: "up", 
-      icon: BuildingOfficeIcon,
-      change: "+$2B"
-    },
-    { 
-      text: "Moorebank intermodal creates 1,700 local jobs", 
-      trend: "up", 
-      icon: ChartBarIcon,
-      change: "+1,700"
-    },
-    { 
-      text: "Casula first home buyers increase 22%", 
-      trend: "up", 
-      icon: HomeIcon,
-      change: "+22%"
-    },
-    { 
-      text: "Narellan Vale townhouses average $850K", 
-      trend: "up", 
-      icon: HomeIcon,
-      change: "+7.8%"
-    },
-    { 
-      text: "Sydney Metro West boosts Parramatta prices", 
-      trend: "up", 
-      icon: BuildingOfficeIcon,
-      change: "+13.5%"
-    },
-    { 
-      text: "Blacktown becomes NSW's largest LGA", 
-      trend: "neutral", 
-      icon: ChartBarIcon,
-      change: "420K"
-    },
-    { 
-      text: "Canterbury-Bankstown rental vacancy at 1.8%", 
-      trend: "down", 
-      icon: HomeIcon,
-      change: "-0.4%"
-    },
-    { 
-      text: "Green Valley median unit price $580K", 
-      trend: "up", 
-      icon: HomeIcon,
-      change: "+5.2%"
-    },
-    { 
-      text: "Western Sydney Uni expansion brings student housing", 
-      trend: "up", 
-      icon: BuildingOfficeIcon,
-      change: "+2,000"
-    },
-    { 
-      text: "Austral land releases sell out in 48 hours", 
-      trend: "up", 
-      icon: HomeIcon,
-      change: "SOLD"
-    },
-    { 
-      text: "M12 Motorway boosts Kemps Creek values", 
-      trend: "up", 
-      icon: ChartBarIcon,
-      change: "+16%"
-    },
-    { 
-      text: "South West growth corridor fastest in Sydney", 
-      trend: "up", 
-      icon: ChartBarIcon,
-      change: "+4.2%"
+  // Icon mapping based on category
+  const getIcon = (category) => {
+    switch(category) {
+      case 'price':
+      case 'buyers':
+        return HomeIcon;
+      case 'infrastructure':
+      case 'development':
+        return BuildingOfficeIcon;
+      case 'investment':
+      case 'rental':
+        return CurrencyDollarIcon;
+      case 'growth':
+        return ChartBarIcon;
+      default:
+        return NewspaperIcon;
     }
-  ];
+  };
 
   useEffect(() => {
-    // Fetch real news data
     fetchNewsData();
-    // Refresh news every 5 minutes
-    const interval = setInterval(fetchNewsData, 300000);
+    // Refresh news every 30 minutes
+    const interval = setInterval(fetchNewsData, 1800000);
     return () => clearInterval(interval);
   }, []);
 
   const fetchNewsData = async () => {
     try {
-      // In production, this would call a news API endpoint
-      // For now, we'll use mock data with some randomization
-      const mockNews = defaultNews.map(item => ({
-        ...item,
-        // Add some randomization to make it seem live
-        change: `${item.trend === 'up' ? '+' : item.trend === 'down' ? '-' : ''}${(Math.random() * 10).toFixed(1)}%`
-      }));
+      const response = await fetch('/api/news-with-summary');
+      const data = await response.json();
       
-      setNewsItems([...mockNews, ...mockNews]); // Duplicate for seamless scrolling
+      // Duplicate for seamless scrolling
+      setNewsItems([...data, ...data]);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching news:', error);
-      setNewsItems([...defaultNews, ...defaultNews]);
-      setLoading(false);
+      // Use default news if API fails
+      fetchDefaultNews();
     }
   };
 
-  const displayItems = loading ? [...defaultNews, ...defaultNews] : newsItems;
+  const fetchDefaultNews = () => {
+    const defaultNews = [
+      {
+        title: "Liverpool median house price hits $1.15M",
+        aiSummary: "8.3% YoY growth driven by Western Sydney Airport proximity and infrastructure improvements",
+        trend: "up",
+        change: "+8.3%",
+        category: "price"
+      },
+      {
+        title: "Western Sydney Airport drives Badgerys Creek boom",
+        aiSummary: "Properties within 10km surging 15.2% as investors capitalize on 2026 opening",
+        trend: "up",
+        change: "+15.2%",
+        category: "infrastructure"
+      },
+      {
+        title: "Camden Council approves 2,500 new homes",
+        aiSummary: "Major development to ease supply pressure while maintaining infrastructure standards",
+        trend: "up",
+        change: "2,500",
+        category: "development"
+      },
+      {
+        title: "South West Sydney rental yields at 4.8%",
+        aiSummary: "Outperforming inner-city by 0.6% due to population growth and limited supply",
+        trend: "up",
+        change: "+0.6%",
+        category: "investment"
+      },
+      {
+        title: "Campbelltown growth outpaces Sydney at 12%",
+        aiSummary: "Nearly double Sydney's average, driven by affordability and infrastructure investment",
+        trend: "up",
+        change: "+12%",
+        category: "growth"
+      }
+    ];
+    
+    setNewsItems([...defaultNews, ...defaultNews]);
+    setLoading(false);
+  };
+
+  const displayItems = newsItems.length > 0 ? newsItems : [];
+
+  if (displayItems.length === 0) {
+    return (
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#636B56]/5 to-[#B28354]/5 backdrop-blur-sm py-3">
+        <div className="flex items-center justify-center">
+          <span className="text-[#636B56] text-sm">Loading market updates...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-r from-[#636B56]/5 to-[#B28354]/5 backdrop-blur-sm">
-      <div className="flex animate-scroll">
-        <div className="flex items-center space-x-8 px-4">
+    <div 
+      className="relative overflow-hidden bg-gradient-to-r from-[#636B56]/5 to-[#B28354]/5 backdrop-blur-sm py-3"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {/* News Label */}
+      <div className="absolute left-0 top-0 bottom-0 z-10 bg-[#636B56] px-4 flex items-center">
+        <NewspaperIcon className="h-5 w-5 text-white mr-2" />
+        <span className="text-white font-bold text-sm uppercase tracking-wider">Live Market</span>
+      </div>
+      
+      {/* Scrolling Content */}
+      <div className={`flex ${isPaused ? '' : 'animate-scroll'} ml-32`}>
+        <div className="flex items-center">
           {displayItems.map((item, index) => {
-            const Icon = item.icon;
+            const Icon = getIcon(item.category);
             const TrendIcon = item.trend === 'up' ? ArrowTrendingUpIcon : 
                             item.trend === 'down' ? ArrowTrendingDownIcon : null;
             
             return (
-              <div key={index} className="flex items-center space-x-2 whitespace-nowrap">
-                <Icon className="h-5 w-5 text-[#636B56]" />
-                <span className="text-base font-medium text-[#636B56]">
-                  {item.text}
-                </span>
-                {TrendIcon && (
-                  <div className="flex items-center space-x-1">
-                    <TrendIcon className={`h-4 w-4 ${
-                      item.trend === 'up' ? 'text-[#636B56]' : 'text-[#864936]'
-                    }`} />
-                    <span className={`text-sm font-bold ${
-                      item.trend === 'up' ? 'text-[#636B56]' : 
-                      item.trend === 'down' ? 'text-[#864936]' : 
-                      'text-[#636B56]'
-                    }`}>
-                      {item.change}
+              <div key={index} className="flex items-center mr-12 whitespace-nowrap group">
+                <Icon className="h-5 w-5 text-[#636B56] mr-2 flex-shrink-0" />
+                
+                <div className="flex flex-col">
+                  {/* Headline */}
+                  <div className="flex items-center">
+                    <span className="text-base font-bold text-[#636B56] mr-2">
+                      {item.title}
                     </span>
+                    {TrendIcon && (
+                      <div className="flex items-center">
+                        <TrendIcon className={`h-4 w-4 ${
+                          item.trend === 'up' ? 'text-[#25D366]' : 'text-[#864936]'
+                        }`} />
+                        <span className={`text-sm font-bold ml-1 ${
+                          item.trend === 'up' ? 'text-[#25D366]' : 
+                          item.trend === 'down' ? 'text-[#864936]' : 
+                          'text-[#636B56]'
+                        }`}>
+                          {item.change}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
+                  
+                  {/* AI Summary */}
+                  <span className="text-sm text-[#864936] mt-0.5 opacity-90">
+                    {item.aiSummary}
+                  </span>
+                </div>
+                
+                {/* Separator */}
                 {index < displayItems.length - 1 && (
-                  <span className="text-[#B28354] mx-2">•</span>
+                  <span className="text-[#B28354] text-2xl mx-8">•</span>
                 )}
               </div>
             );
@@ -221,7 +165,7 @@ export default function NewsTicker() {
       </div>
       
       {/* Gradient overlays for fade effect */}
-      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-[#F8F2E7] to-transparent pointer-events-none" />
+      <div className="absolute left-32 top-0 bottom-0 w-20 bg-gradient-to-r from-[#F8F2E7] to-transparent pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-[#F8F2E7] to-transparent pointer-events-none" />
       
       <style jsx>{`
@@ -235,7 +179,7 @@ export default function NewsTicker() {
         }
         
         .animate-scroll {
-          animation: scroll 120s linear infinite;
+          animation: scroll 180s linear infinite;
         }
         
         .animate-scroll:hover {

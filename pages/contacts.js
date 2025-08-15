@@ -14,7 +14,9 @@ export default function Contacts() {
   const [totalContacts, setTotalContacts] = useState(0);
   const [isSearching, setIsSearching] = useState(false);
   const [sortField, setSortField] = useState('name');
-  const [sortOrder, setSortOrder] = useState('asc')
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [syncingPipedrive, setSyncingPipedrive] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -31,6 +33,11 @@ export default function Contacts() {
 
   useEffect(() => {
     fetchContacts(currentPage, searchTerm, filterStatus);
+    // Check last sync time from localStorage
+    const savedSyncTime = localStorage.getItem('pipedriveLastSync');
+    if (savedSyncTime) {
+      setLastSyncTime(new Date(savedSyncTime));
+    }
   }, [currentPage, filterStatus, sortField, sortOrder]);
 
   // Debounced search to avoid too many API calls
@@ -150,6 +157,36 @@ export default function Contacts() {
       tags: []
     });
     setEditingContact(null);
+  };
+
+  const syncWithPipedrive = async () => {
+    setSyncingPipedrive(true);
+    try {
+      const response = await fetch('/api/pipedrive/sync-to-supabase', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        localStorage.setItem('pipedriveLastSync', data.sync_time);
+        setLastSyncTime(new Date(data.sync_time));
+        
+        // Refresh contacts display
+        await fetchContacts(currentPage, searchTerm, filterStatus);
+        
+        alert(`${data.message}\n\nSynced: ${data.stats.synced}\nErrors: ${data.stats.errors}`);
+      } else {
+        alert('Failed to sync with Pipedrive: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Pipedrive sync error:', error);
+      alert('Error syncing with Pipedrive. Please check your configuration.');
+    } finally {
+      setSyncingPipedrive(false);
+    }
   };
 
   // Pagination calculations
@@ -299,12 +336,18 @@ export default function Contacts() {
           <div>
             <h1 className="text-3xl font-bold text-[#864936]">Contacts</h1>
             <p className="mt-1 text-sm text-gray-600">
-              Manage your contacts and customer relationships • Includes Pipedrive imported data
+              Manage your contacts and customer relationships • Full Pipedrive integration
             </p>
             <div className="mt-2 flex items-center gap-2">
-              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                ✓ Pipedrive Synced
-              </span>
+              {lastSyncTime ? (
+                <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                  ✓ Last synced: {lastSyncTime.toLocaleString()}
+                </span>
+              ) : (
+                <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
+                  ⚠ Not synced with Pipedrive
+                </span>
+              )}
               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
                 {totalContacts} Total Contacts
               </span>
@@ -315,15 +358,31 @@ export default function Contacts() {
               )}
             </div>
           </div>
-          <button
-            onClick={() => {
-              resetForm();
-              setShowAddModal(true);
-            }}
-            className="bg-[#636B56] text-white px-4 py-2 rounded-lg hover:bg-[#864936] transition-colors"
-          >
-            Add Contact
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={syncWithPipedrive}
+              disabled={syncingPipedrive}
+              className="bg-[#25D366] text-white px-4 py-2 rounded-lg hover:bg-[#22c55e] transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {syncingPipedrive ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Syncing...
+                </>
+              ) : (
+                <>🔄 Sync Pipedrive</>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                resetForm();
+                setShowAddModal(true);
+              }}
+              className="bg-[#636B56] text-white px-4 py-2 rounded-lg hover:bg-[#864936] transition-colors"
+            >
+              Add Contact
+            </button>
+          </div>
         </div>
 
         <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -592,250 +651,512 @@ export default function Contacts() {
           </div>
         )}
 
-        {/* Contact Profile Modal - Full Pipedrive-style View */}
+        {/* Premium Contact Profile Modal - Full Pipedrive Integration */}
         {viewingContact && (
-          <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex items-center justify-center min-h-screen px-4">
-              <div className="fixed inset-0 bg-black opacity-50" onClick={() => setViewingContact(null)}></div>
-              
-              <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative z-10">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-lg">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h2 className="text-3xl font-bold">{viewingContact.name}</h2>
-                      <div className="mt-2 flex items-center gap-4 text-blue-100">
-                        {viewingContact.company && <span>🏢 {viewingContact.company}</span>}
-                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          viewingContact.status === 'lead' ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
-                        }`}>
-                          {viewingContact.status?.toUpperCase()}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setViewingContact(null)}
-                      className="text-white hover:text-gray-200"
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Content Grid */}
-                <div className="p-6 grid grid-cols-2 gap-6">
-                  {/* Left Column - Contact Details */}
-                  <div className="space-y-4">
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                        📞 Contact Information
-                      </h3>
-                      <div className="space-y-2 text-sm">
-                        {viewingContact.phone_number && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-600">Phone:</span>
-                            <a href={`tel:${viewingContact.phone_number}`} className="text-blue-600 hover:underline font-medium">
-                              {viewingContact.phone_number}
-                            </a>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                window.location.href = `/twilio-browser-phone?number=${viewingContact.phone_number}`;
-                              }}
-                              className="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
-                            >
-                              Call Now
-                            </button>
+          <div className="fixed inset-0 z-50 overflow-hidden">
+            <div className="absolute inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onClick={() => setViewingContact(null)}></div>
+            
+            <div className="fixed inset-y-0 right-0 flex max-w-7xl">
+              <div className="w-screen max-w-7xl">
+                <div className="h-full flex flex-col bg-white shadow-2xl">
+                  {/* Premium Header with Gradient */}
+                  <div className="relative bg-gradient-to-br from-[#636B56] via-[#7a8365] to-[#864936] text-white">
+                    <div className="absolute inset-0 bg-black opacity-20"></div>
+                    <div className="relative px-8 py-6">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-6">
+                          {/* Avatar */}
+                          <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-3xl font-bold border-2 border-white/30">
+                            {viewingContact.picture_url ? (
+                              <img src={viewingContact.picture_url} alt={viewingContact.name} className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                              viewingContact.name?.charAt(0).toUpperCase()
+                            )}
                           </div>
-                        )}
-                        {viewingContact.email && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-600">Email:</span>
-                            <a href={`mailto:${viewingContact.email}`} className="text-blue-600 hover:underline">
-                              {viewingContact.email}
-                            </a>
-                          </div>
-                        )}
-                        {viewingContact.first_name && (
-                          <div><span className="text-gray-600">First Name:</span> {viewingContact.first_name}</div>
-                        )}
-                        {viewingContact.last_name && (
-                          <div><span className="text-gray-600">Last Name:</span> {viewingContact.last_name}</div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="font-semibold text-gray-800 mb-3">📊 Activity & Engagement</h3>
-                      <div className="space-y-2 text-sm">
-                        <div><span className="text-gray-600">Source:</span> {viewingContact.source}</div>
-                        <div><span className="text-gray-600">Added:</span> {new Date(viewingContact.created_at).toLocaleDateString()}</div>
-                        {viewingContact.last_contact_date && (
-                          <div><span className="text-gray-600">Last Contact:</span> {new Date(viewingContact.last_contact_date).toLocaleDateString()}</div>
-                        )}
-                        {viewingContact.next_follow_up && (
-                          <div className="text-orange-600 font-medium">
-                            ⏰ Next Follow-up: {new Date(viewingContact.next_follow_up).toLocaleDateString()}
-                          </div>
-                        )}
-                        {viewingContact.lead_score && (
-                          <div className="mt-2">
-                            <span className="text-gray-600">Lead Score:</span>
-                            <div className="mt-1 flex items-center gap-1">
-                              {[...Array(10)].map((_, i) => (
-                                <div
-                                  key={i}
-                                  className={`h-2 w-6 rounded ${
-                                    i < viewingContact.lead_score ? 'bg-green-500' : 'bg-gray-300'
-                                  }`}
-                                ></div>
-                              ))}
-                              <span className="ml-2 text-sm font-medium">{viewingContact.lead_score}/10</span>
+                          <div>
+                            <h2 className="text-3xl font-bold mb-2">{viewingContact.name}</h2>
+                            <div className="flex flex-wrap items-center gap-3 text-white/90">
+                              {viewingContact.company && (
+                                <span className="flex items-center gap-1">
+                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4z" clipRule="evenodd" />
+                                  </svg>
+                                  {viewingContact.company}
+                                </span>
+                              )}
+                              {viewingContact.owner_name && (
+                                <span className="flex items-center gap-1">
+                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                                  </svg>
+                                  {viewingContact.owner_name}
+                                </span>
+                              )}
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                viewingContact.status === 'Active' || viewingContact.status === 'hot' ? 'bg-green-500/80 text-white' : 
+                                viewingContact.status === 'Prospect' || viewingContact.status === 'warm' ? 'bg-yellow-500/80 text-white' :
+                                'bg-gray-500/80 text-white'
+                              }`}>
+                                {viewingContact.status?.toUpperCase()}
+                              </span>
+                              {viewingContact.lead_score && (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-xs">Lead Score:</span>
+                                  <div className="flex gap-0.5">
+                                    {[...Array(10)].map((_, i) => (
+                                      <div key={i} className={`w-1.5 h-3 rounded-sm ${
+                                        i < viewingContact.lead_score ? 'bg-yellow-400' : 'bg-white/30'
+                                      }`}></div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
-                        )}
+                        </div>
+                        <button
+                          onClick={() => setViewingContact(null)}
+                          className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                        >
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Quick Stats Bar */}
+                    <div className="mt-6 grid grid-cols-5 gap-4 pb-6">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">{viewingContact.open_deals_count || 0}</div>
+                        <div className="text-xs text-white/70">Open Deals</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">{viewingContact.won_deals_count || 0}</div>
+                        <div className="text-xs text-white/70">Won Deals</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">{viewingContact.activities_count || 0}</div>
+                        <div className="text-xs text-white/70">Activities</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">{viewingContact.notes_count || 0}</div>
+                        <div className="text-xs text-white/70">Notes</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">
+                          ${((viewingContact.total_deal_value || 0) / 1000).toFixed(0)}K
+                        </div>
+                        <div className="text-xs text-white/70">Deal Value</div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Right Column - Notes & Properties */}
-                  <div className="space-y-4">
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="font-semibold text-gray-800 mb-3">📝 Notes & Details</h3>
-                      <div className="text-sm text-gray-700">
-                        {viewingContact.notes || 'No notes available'}
-                      </div>
-                      {viewingContact.property_interests && viewingContact.property_interests.length > 0 && (
-                        <div className="mt-3">
-                          <span className="text-gray-600 text-sm">Property Interests:</span>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {viewingContact.property_interests.map((interest, idx) => (
-                              <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
-                                {interest}
-                              </span>
+                  {/* Tab Navigation */}
+                  <div className="border-b border-gray-200 bg-gray-50">
+                    <nav className="flex px-8 -mb-px">
+                      {['Overview', 'Activities', 'Notes', 'Deals', 'Communications'].map((tab, idx) => (
+                        <button
+                          key={tab}
+                          className={`py-3 px-6 text-sm font-medium border-b-2 transition-colors ${
+                            idx === 0 
+                              ? 'border-[#636B56] text-[#636B56]' 
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          {tab}
+                        </button>
+                      ))}
+                    </nav>
+                  </div>
+
+                  {/* Scrollable Content Area */}
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="p-8 grid grid-cols-3 gap-8">
+                      {/* Left Column - Contact & Activity Details */}
+                      <div className="space-y-6">
+                        {/* Contact Card */}
+                        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-5 py-3 border-b border-gray-200">
+                            <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                              <svg className="w-5 h-5 text-[#636B56]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                              Contact Information
+                            </h3>
+                          </div>
+                          <div className="p-5 space-y-3">
+                            {viewingContact.phone_number && (
+                              <div className="flex items-center justify-between group">
+                                <div>
+                                  <div className="text-xs text-gray-500 mb-1">Primary Phone</div>
+                                  <a href={`tel:${viewingContact.phone_number}`} className="text-gray-900 font-medium hover:text-[#636B56] transition-colors">
+                                    {viewingContact.phone_number}
+                                  </a>
+                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.location.href = `/twilio-browser-phone?number=${viewingContact.phone_number}`;
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs hover:bg-green-600 flex items-center gap-1"
+                                >
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                  </svg>
+                                  Call
+                                </button>
+                              </div>
+                            )}
+                            {viewingContact.all_phones?.slice(1).map((phone, idx) => (
+                              <div key={idx}>
+                                <div className="text-xs text-gray-500 mb-1">{phone.label || 'Other'}</div>
+                                <a href={`tel:${phone.value}`} className="text-gray-700 hover:text-[#636B56]">
+                                  {phone.value}
+                                </a>
+                              </div>
+                            ))}
+                            {viewingContact.email && (
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Primary Email</div>
+                                <a href={`mailto:${viewingContact.email}`} className="text-gray-900 font-medium hover:text-[#636B56] transition-colors">
+                                  {viewingContact.email}
+                                </a>
+                              </div>
+                            )}
+                            {viewingContact.all_emails?.slice(1).map((email, idx) => (
+                              <div key={idx}>
+                                <div className="text-xs text-gray-500 mb-1">{email.label || 'Other'}</div>
+                                <a href={`mailto:${email.value}`} className="text-gray-700 hover:text-[#636B56]">
+                                  {email.value}
+                                </a>
+                              </div>
                             ))}
                           </div>
                         </div>
-                      )}
-                    </div>
 
-                    {/* Deal Information */}
-                    {(viewingContact.open_deals_count > 0 || viewingContact.won_deals_count > 0) && (
-                      <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                        <h3 className="font-semibold text-green-800 mb-3">💰 Deal Information</h3>
-                        <div className="space-y-2 text-sm">
-                          {viewingContact.open_deals_count > 0 && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Open Deals:</span>
-                              <span className="font-semibold text-green-600">{viewingContact.open_deals_count}</span>
+                        {/* Activity Timeline */}
+                        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-5 py-3 border-b border-gray-200">
+                            <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                              <svg className="w-5 h-5 text-[#636B56]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Activity Timeline
+                            </h3>
+                          </div>
+                          <div className="p-5 space-y-4">
+                            {viewingContact.next_activity_date && (
+                              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                                <div className="flex items-start gap-3">
+                                  <div className="w-2 h-2 bg-amber-500 rounded-full mt-1.5 animate-pulse"></div>
+                                  <div className="flex-1">
+                                    <div className="text-xs text-amber-600 font-semibold mb-1">NEXT ACTIVITY</div>
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {viewingContact.next_activity_subject || viewingContact.next_activity_type || 'Follow-up'}
+                                    </div>
+                                    <div className="text-xs text-gray-600 mt-1">
+                                      {new Date(viewingContact.next_activity_date).toLocaleDateString('en-US', {
+                                        weekday: 'short',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            {viewingContact.last_activity_date && (
+                              <div>
+                                <div className="flex items-start gap-3">
+                                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-1.5"></div>
+                                  <div className="flex-1">
+                                    <div className="text-xs text-gray-500 font-semibold mb-1">LAST ACTIVITY</div>
+                                    <div className="text-sm text-gray-700">
+                                      {viewingContact.last_activity_subject || viewingContact.last_activity_type || 'Activity'}
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      {new Date(viewingContact.last_activity_date).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            <div className="pt-3 border-t border-gray-100">
+                              <div className="grid grid-cols-2 gap-3 text-xs">
+                                <div>
+                                  <span className="text-gray-500">Done:</span>
+                                  <span className="ml-1 font-semibold text-gray-900">{viewingContact.done_activities_count || 0}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Pending:</span>
+                                  <span className="ml-1 font-semibold text-amber-600">{viewingContact.undone_activities_count || 0}</span>
+                                </div>
+                              </div>
                             </div>
-                          )}
-                          {viewingContact.won_deals_count > 0 && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Won Deals:</span>
-                              <span className="font-semibold text-green-700">{viewingContact.won_deals_count}</span>
-                            </div>
-                          )}
-                          {viewingContact.lost_deals_count > 0 && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Lost Deals:</span>
-                              <span className="text-gray-500">{viewingContact.lost_deals_count}</span>
-                            </div>
-                          )}
+                          </div>
                         </div>
                       </div>
-                    )}
 
-                    {/* Activity Stats */}
-                    {viewingContact.activities_count > 0 && (
-                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                        <h3 className="font-semibold text-blue-800 mb-3">📊 Activity Statistics</h3>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Total Activities:</span>
-                            <span className="font-semibold">{viewingContact.activities_count}</span>
+                      {/* Middle Column - Notes & Communications */}
+                      <div className="space-y-6">
+                        {/* Notes Section */}
+                        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-5 py-3 border-b border-gray-200 flex justify-between items-center">
+                            <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                              <svg className="w-5 h-5 text-[#636B56]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              Notes & History
+                            </h3>
+                            <span className="text-xs text-gray-500">{viewingContact.notes_count || 0} notes</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Completed:</span>
-                            <span className="text-green-600">{viewingContact.done_activities_count || 0}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Pending:</span>
-                            <span className="text-orange-600">{viewingContact.undone_activities_count || 0}</span>
-                          </div>
-                          {viewingContact.email_messages_count > 0 && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Email Messages:</span>
-                              <span>{viewingContact.email_messages_count}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="font-semibold text-gray-800 mb-3">🎯 Quick Actions</h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
-                          📧 Send Email
-                        </button>
-                        <button className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm">
-                          📅 Schedule Meeting
-                        </button>
-                        <button className="px-3 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 text-sm">
-                          🏠 Show Properties
-                        </button>
-                        <button className="px-3 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 text-sm">
-                          📝 Add Note
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Pipedrive Integration */}
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                      <h3 className="font-semibold text-blue-800 mb-2">🔗 Pipedrive Integration</h3>
-                      <div className="text-sm text-blue-700">
-                        {viewingContact.notes?.includes('Pipedrive ID:') && (
-                          <div>
-                            {viewingContact.notes.match(/Pipedrive ID: (\d+)/)?.[1] && (
-                              <a
-                                href={`https://oakmontrealty.pipedrive.com/person/${viewingContact.notes.match(/Pipedrive ID: (\d+)/)?.[1]}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline font-medium"
-                              >
-                                View in Pipedrive →
-                              </a>
+                          <div className="p-5">
+                            {viewingContact.recent_notes && viewingContact.recent_notes.length > 0 ? (
+                              <div className="space-y-3 max-h-96 overflow-y-auto">
+                                {viewingContact.recent_notes.map((note, idx) => (
+                                  <div key={idx} className="border-l-2 border-gray-200 pl-4 hover:border-[#636B56] transition-colors">
+                                    <div className="flex justify-between items-start mb-1">
+                                      <span className="text-xs font-medium text-gray-600">{note.user}</span>
+                                      <span className="text-xs text-gray-400">
+                                        {new Date(note.add_time).toLocaleDateString()}
+                                      </span>
+                                    </div>
+                                    <div className="text-sm text-gray-800 whitespace-pre-wrap">
+                                      {note.content}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : viewingContact.notes ? (
+                              <div className="text-sm text-gray-700 whitespace-pre-wrap max-h-96 overflow-y-auto">
+                                {viewingContact.notes}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-gray-500 italic">No notes available</div>
                             )}
                           </div>
+                        </div>
+
+                        {/* Quick Actions */}
+                        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-5 py-3 border-b border-gray-200">
+                            <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                              <svg className="w-5 h-5 text-[#636B56]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                              </svg>
+                              Quick Actions
+                            </h3>
+                          </div>
+                          <div className="p-5 grid grid-cols-2 gap-3">
+                            <button className="px-4 py-2.5 bg-[#636B56] text-white rounded-lg hover:bg-[#7a8365] text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                              </svg>
+                              Send Email
+                            </button>
+                            <button className="px-4 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                              </svg>
+                              Schedule
+                            </button>
+                            <button className="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                              </svg>
+                              Call Now
+                            </button>
+                            <button className="px-4 py-2.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                              </svg>
+                              Add Deal
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Column - Deals & Metadata */}
+                      <div className="space-y-6">
+                        {/* Deals Section */}
+                        {viewingContact.deals && viewingContact.deals.length > 0 ? (
+                          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-5 py-3 border-b border-gray-200">
+                              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                                <svg className="w-5 h-5 text-[#636B56]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Deals Pipeline
+                              </h3>
+                            </div>
+                            <div className="p-5 space-y-3 max-h-96 overflow-y-auto">
+                              {viewingContact.deals.map((deal, idx) => (
+                                <div key={idx} className={`border rounded-lg p-3 ${
+                                  deal.status === 'open' ? 'border-blue-200 bg-blue-50' :
+                                  deal.status === 'won' ? 'border-green-200 bg-green-50' :
+                                  'border-gray-200 bg-gray-50'
+                                }`}>
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                      <div className="font-medium text-gray-900">{deal.title}</div>
+                                      <div className="text-xs text-gray-500 mt-1">
+                                        Created: {new Date(deal.add_time).toLocaleDateString()}
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="font-semibold text-gray-900">
+                                        ${(deal.value || 0).toLocaleString()}
+                                      </div>
+                                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                        deal.status === 'open' ? 'bg-blue-200 text-blue-800' :
+                                        deal.status === 'won' ? 'bg-green-200 text-green-800' :
+                                        'bg-gray-200 text-gray-800'
+                                      }`}>
+                                        {deal.status?.toUpperCase()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  {deal.probability && (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs text-gray-500">Probability:</span>
+                                      <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                                        <div 
+                                          className="bg-[#636B56] h-1.5 rounded-full"
+                                          style={{ width: `${deal.probability}%` }}
+                                        ></div>
+                                      </div>
+                                      <span className="text-xs font-medium">{deal.probability}%</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-5 py-3 border-b border-gray-200">
+                              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                                <svg className="w-5 h-5 text-[#636B56]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Deal Summary
+                              </h3>
+                            </div>
+                            <div className="p-5">
+                              <div className="grid grid-cols-3 gap-4 text-center">
+                                <div>
+                                  <div className="text-2xl font-bold text-blue-600">{viewingContact.open_deals_count || 0}</div>
+                                  <div className="text-xs text-gray-500">Open</div>
+                                </div>
+                                <div>
+                                  <div className="text-2xl font-bold text-green-600">{viewingContact.won_deals_count || 0}</div>
+                                  <div className="text-xs text-gray-500">Won</div>
+                                </div>
+                                <div>
+                                  <div className="text-2xl font-bold text-gray-400">{viewingContact.lost_deals_count || 0}</div>
+                                  <div className="text-xs text-gray-500">Lost</div>
+                                </div>
+                              </div>
+                              {viewingContact.total_deal_value > 0 && (
+                                <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+                                  <div className="text-xs text-gray-500 mb-1">Total Value</div>
+                                  <div className="text-xl font-bold text-[#636B56]">
+                                    ${viewingContact.total_deal_value.toLocaleString()}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         )}
-                        <div className="mt-2 text-xs text-gray-600">
-                          Last synced: {new Date(viewingContact.updated_at).toLocaleString()}
+
+                        {/* Metadata & Integration */}
+                        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-5 py-3 border-b border-gray-200">
+                            <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                              <svg className="w-5 h-5 text-[#636B56]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Details & Integration
+                            </h3>
+                          </div>
+                          <div className="p-5 space-y-3 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Source:</span>
+                              <span className="font-medium">{viewingContact.source || 'Direct'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Added:</span>
+                              <span className="font-medium">{new Date(viewingContact.created_at).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Updated:</span>
+                              <span className="font-medium">{new Date(viewingContact.updated_at).toLocaleDateString()}</span>
+                            </div>
+                            {viewingContact.owner_name && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Owner:</span>
+                                <span className="font-medium">{viewingContact.owner_name}</span>
+                              </div>
+                            )}
+                            {viewingContact.pipedrive_id && (
+                              <div className="pt-3 border-t border-gray-100">
+                                <a
+                                  href={`https://app.pipedrive.com/person/${viewingContact.pipedrive_id}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-[#636B56] text-white rounded-lg hover:bg-[#7a8365] transition-colors"
+                                >
+                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                                    <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                                  </svg>
+                                  View in Pipedrive
+                                </a>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Footer Actions */}
-                <div className="border-t bg-gray-50 px-6 py-4 flex justify-between">
-                  <button
-                    onClick={() => {
-                      setEditingContact(viewingContact);
-                      setViewingContact(null);
-                    }}
-                    className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                  >
-                    Edit Contact
-                  </button>
-                  <button
-                    onClick={() => setViewingContact(null)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-                  >
-                    Close
-                  </button>
+                  {/* Footer Actions Bar */}
+                  <div className="border-t bg-gray-50 px-8 py-4">
+                    <div className="flex justify-between items-center">
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => {
+                            setEditingContact(viewingContact);
+                            setViewingContact(null);
+                            setShowAddModal(true);
+                          }}
+                          className="px-4 py-2 bg-[#636B56] text-white rounded-lg hover:bg-[#7a8365] transition-colors flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                          </svg>
+                          Edit Contact
+                        </button>
+                        <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                          Export
+                        </button>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Contact ID: {viewingContact.id} • Last sync: {viewingContact.sync_time ? new Date(viewingContact.sync_time).toLocaleString() : 'Never'}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
