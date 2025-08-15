@@ -38,7 +38,7 @@ export default function Sidebar() {
         <h1 className="text-white text-xl font-bold">VoiCRM</h1>
       </div>
       
-      <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+      <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto scrollbar-hide">
         <nav className="mt-5 flex-1 px-2 space-y-1">
           {navigation.map((item) => {
             const isActive = router.pathname === item.href;
@@ -50,12 +50,12 @@ export default function Sidebar() {
                   isActive
                     ? 'bg-gray-800 text-white'
                     : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+                } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-all duration-300 ease-in-out transform hover:scale-[1.02] hover:translate-x-1`}
               >
                 <item.icon
                   className={`${
                     isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-300'
-                  } mr-3 flex-shrink-0 h-6 w-6`}
+                  } mr-3 flex-shrink-0 h-6 w-6 transition-all duration-300 ease-in-out group-hover:scale-110`}
                   aria-hidden="true"
                 />
                 {item.name}
