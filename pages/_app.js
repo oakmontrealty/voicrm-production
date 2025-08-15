@@ -24,8 +24,11 @@ export default function App({ Component, pageProps }) {
     const isPublicPath = publicPaths.some(path => router.pathname.startsWith(path));
     
     if (!isPublicPath && typeof window !== 'undefined') {
-      const token = document.cookie.split('; ').find(row => row.startsWith('auth-token='));
-      if (!token && router.pathname !== '/login') {
+      // Check both cookie and localStorage for auth
+      const cookieToken = document.cookie.split('; ').find(row => row.startsWith('auth-token='));
+      const localToken = localStorage.getItem('authToken');
+      
+      if (!cookieToken && !localToken && router.pathname !== '/login') {
         router.push('/login?from=' + encodeURIComponent(router.pathname));
         return;
       }

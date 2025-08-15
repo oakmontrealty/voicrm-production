@@ -8,11 +8,9 @@ export function middleware(request) {
     if (
       path === '/login' ||
       path.startsWith('/api/auth') ||
-      path.startsWith('/api/') ||
       path.startsWith('/_next') ||
       path.startsWith('/favicon') ||
-      path.includes('.') ||
-      path === '/'
+      path.includes('.')
     ) {
       return NextResponse.next();
     }

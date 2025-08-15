@@ -37,6 +37,10 @@ export default function Login() {
       const data = await res.json();
 
       if (res.ok) {
+        // Save session token
+        localStorage.setItem('authToken', data.token || 'authenticated');
+        localStorage.setItem('userInfo', JSON.stringify(data.user));
+        
         // Save credentials if remember me is checked
         if (rememberMe) {
           localStorage.setItem('savedUsername', username);

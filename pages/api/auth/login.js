@@ -29,11 +29,17 @@ export default async function handler(req, res) {
   // Simple token for now
   const token = Buffer.from(`${user.username}:${user.role}:${Date.now()}`).toString('base64');
 
-  // Set cookie with token
-  res.setHeader('Set-Cookie', `auth-token=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400`);
+  // Set cookie with token - remove Secure flag for local development
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieOptions = isProduction 
+    ? `auth-token=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`
+    : `auth-token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`;
+  
+  res.setHeader('Set-Cookie', cookieOptions);
 
   return res.status(200).json({ 
     success: true,
+    token: token,
     user: {
       username: user.username,
       name: user.name,
