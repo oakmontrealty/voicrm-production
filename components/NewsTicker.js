@@ -188,4 +188,4 @@ export default function NewsTicker() {
       `}</style>
     </div>
   );
-}
+}// Deployment trigger Fri, Aug 15, 2025  8:52:32 PM
